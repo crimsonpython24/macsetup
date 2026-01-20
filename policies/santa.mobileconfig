@@ -25,6 +25,8 @@
         <true />
         <key>EnableTransitiveRules</key>
         <true />
+        <key>EnableAllEventUpload</key>
+        <true />
         <key>BlockUSBMount</key>
         <false />
         <key>RemountUSBMode</key>
@@ -32,34 +34,37 @@
           <string>noexec</string>
           <string>nosuid</string>
           <string>nodev</string>
+          <string>rdonly</string>
         </array>
         <key>OnStartUSBOptions</key>
         <string>ForceRemount</string>
         <key>FileAccessPolicyPlist</key>
         <string>/var/db/santa/faa_policy.plist</string>
         <key>FileAccessPolicyUpdateIntervalSec</key>
-        <integer>300</integer>
+        <integer>60</integer>
         <key>BannedBlockMessage</key>
-        <string>This application has been explicitly blocked by security policy.</string>
+        <string>BLOCKED: This application has been explicitly banned.</string>
         <key>UnknownBlockMessage</key>
-        <string>This application is not recognized. If this is legitimate software, add it to the allowlist.</string>
+        <string>BLOCKED: Unrecognized binary. Allowlist via santactl if legitimate.</string>
         <key>BannedUSBBlockMessage</key>
-        <string>This USB device has been blocked by security policy.</string>
+        <string>BLOCKED: USB device banned by policy.</string>
         <key>RemountUSBBlockMessage</key>
-        <string>This USB device has been remounted with restricted permissions (noexec, nosuid, nodev).</string>
+        <string>USB remounted read-only with noexec/nosuid/nodev.</string>
         <key>FileAccessBlockMessage</key>
-        <string>File access blocked by security policy. An unauthorized process attempted to access protected files.</string>
+        <string>BLOCKED: Unauthorized file access attempt logged.</string>
         <key>EnableNotificationSilences</key>
         <false />
         <key>EnableSilentMode</key>
         <false />
         <key>EnableSilentTTYMode</key>
         <false />
+        <key>FailClosed</key>
+        <true />
         <key>Telemetry</key>
         <array>
           <string>Everything</string>
         </array>
-        
+
         <key>StaticRules</key>
         <array>
           <dict>
@@ -69,48 +74,6 @@
             <string>ALLOWLIST</string>
             <key>Identifier</key>
             <string>platform:*</string>
-            <key>Comment</key>
-            <string>Allow all Apple platform binaries</string>
-          </dict>
-          <dict>
-            <key>RuleType</key>
-            <string>SIGNINGID</string>
-            <key>Policy</key>
-            <string>ALLOWLIST</string>
-            <key>Identifier</key>
-            <string>platform:com.apple.ssh</string>
-            <key>Comment</key>
-            <string>SSH client</string>
-          </dict>
-          <dict>
-            <key>RuleType</key>
-            <string>SIGNINGID</string>
-            <key>Policy</key>
-            <string>ALLOWLIST</string>
-            <key>Identifier</key>
-            <string>platform:com.apple.ssh-agent</string>
-            <key>Comment</key>
-            <string>SSH agent</string>
-          </dict>
-          <dict>
-            <key>RuleType</key>
-            <string>SIGNINGID</string>
-            <key>Policy</key>
-            <string>ALLOWLIST</string>
-            <key>Identifier</key>
-            <string>platform:com.apple.ssh-add</string>
-            <key>Comment</key>
-            <string>SSH key management</string>
-          </dict>
-          <dict>
-            <key>RuleType</key>
-            <string>SIGNINGID</string>
-            <key>Policy</key>
-            <string>ALLOWLIST</string>
-            <key>Identifier</key>
-            <string>platform:com.apple.ssh-keygen</string>
-            <key>Comment</key>
-            <string>SSH key generation</string>
           </dict>
           <dict>
             <key>RuleType</key>
@@ -119,8 +82,6 @@
             <string>ALLOWLIST</string>
             <key>Identifier</key>
             <string>/opt/local/bin</string>
-            <key>Comment</key>
-            <string>MacPorts binaries</string>
           </dict>
           <dict>
             <key>RuleType</key>
@@ -129,8 +90,6 @@
             <string>ALLOWLIST</string>
             <key>Identifier</key>
             <string>/opt/local/sbin</string>
-            <key>Comment</key>
-            <string>MacPorts system binaries</string>
           </dict>
           <dict>
             <key>RuleType</key>
@@ -139,8 +98,6 @@
             <string>ALLOWLIST</string>
             <key>Identifier</key>
             <string>/opt/local/libexec</string>
-            <key>Comment</key>
-            <string>MacPorts libexec</string>
           </dict>
           <dict>
             <key>RuleType</key>
@@ -149,8 +106,6 @@
             <string>ALLOWLIST</string>
             <key>Identifier</key>
             <string>/opt/local/lib</string>
-            <key>Comment</key>
-            <string>MacPorts libraries</string>
           </dict>
           <dict>
             <key>RuleType</key>
@@ -159,28 +114,6 @@
             <string>ALLOWLIST</string>
             <key>Identifier</key>
             <string>/opt/local/lib/node_modules</string>
-            <key>Comment</key>
-            <string>Global npm packages (MacPorts node)</string>
-          </dict>
-          <dict>
-            <key>RuleType</key>
-            <string>PATH</string>
-            <key>Policy</key>
-            <string>ALLOWLIST</string>
-            <key>Identifier</key>
-            <string>/Users/warren/.npm-global</string>
-            <key>Comment</key>
-            <string>User npm global packages</string>
-          </dict>
-          <dict>
-            <key>RuleType</key>
-            <string>PATH</string>
-            <key>Policy</key>
-            <string>ALLOWLIST</string>
-            <key>Identifier</key>
-            <string>/Users/warren/*/node_modules</string>
-            <key>Comment</key>
-            <string>Project node_modules (BROAD - review if concerned)</string>
           </dict>
           <dict>
             <key>RuleType</key>
@@ -189,8 +122,14 @@
             <string>ALLOWLIST</string>
             <key>Identifier</key>
             <string>/opt/local/Library/Frameworks/Python.framework</string>
-            <key>Comment</key>
-            <string>MacPorts Python framework</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>PATH</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>/Users/warren/.npm-global</string>
           </dict>
           <dict>
             <key>RuleType</key>
@@ -199,8 +138,6 @@
             <string>ALLOWLIST</string>
             <key>Identifier</key>
             <string>/Users/warren/.local/bin</string>
-            <key>Comment</key>
-            <string>pipx / user Python scripts</string>
           </dict>
           <dict>
             <key>RuleType</key>
@@ -209,8 +146,6 @@
             <string>ALLOWLIST</string>
             <key>Identifier</key>
             <string>/Users/warren/.cargo/bin</string>
-            <key>Comment</key>
-            <string>Cargo installed binaries</string>
           </dict>
           <dict>
             <key>RuleType</key>
@@ -219,8 +154,6 @@
             <string>ALLOWLIST</string>
             <key>Identifier</key>
             <string>/Users/warren/.rustup</string>
-            <key>Comment</key>
-            <string>Rustup toolchains</string>
           </dict>
           <dict>
             <key>RuleType</key>
@@ -229,8 +162,6 @@
             <string>ALLOWLIST</string>
             <key>Identifier</key>
             <string>/Users/warren/go/bin</string>
-            <key>Comment</key>
-            <string>Go binaries</string>
           </dict>
           <dict>
             <key>RuleType</key>
@@ -239,8 +170,14 @@
             <string>ALLOWLIST</string>
             <key>Identifier</key>
             <string>UBF8T346G9</string>
-            <key>Comment</key>
-            <string>Microsoft (VS Code, etc)</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>TEAMID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>EQHXZ8M8AV</string>
           </dict>
           <dict>
             <key>RuleType</key>
@@ -249,8 +186,22 @@
             <string>ALLOWLIST</string>
             <key>Identifier</key>
             <string>9BNSXJN65R</string>
-            <key>Comment</key>
-            <string>Docker Inc</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>TEAMID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>VLUGQBAPZ5</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>TEAMID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>KYL8YCVN64</string>
           </dict>
         </array>
         
