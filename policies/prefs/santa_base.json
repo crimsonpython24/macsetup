@@ -1,184 +1,249 @@
 {
-  "rules" : [
+  "rules": [
     {
-      "policy" : "BLOCKLIST",
-      "rule_type" : "SIGNINGID",
-      "custom_url" : "",
-      "identifier" : "platform:com.apple.Dictionary",
-      "custom_msg" : "",
-      "comment" : "",
-      "cel_expr" : ""
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.Dictionary",
+      "custom_msg": "",
+      "comment": "Dictionary - rarely needed, reduces attack surface"
     },
     {
-      "policy" : "BLOCKLIST",
-      "rule_type" : "SIGNINGID",
-      "custom_url" : "",
-      "identifier" : "platform:com.apple.Chess",
-      "custom_msg" : "",
-      "comment" : "",
-      "cel_expr" : ""
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.Chess",
+      "custom_msg": "",
+      "comment": "Chess"
     },
     {
-      "policy" : "BLOCKLIST",
-      "rule_type" : "SIGNINGID",
-      "custom_url" : "",
-      "identifier" : "platform:com.apple.AddressBook",
-      "custom_msg" : "",
-      "comment" : "",
-      "cel_expr" : ""
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.AddressBook",
+      "custom_msg": "",
+      "comment": "Contacts - using alternative or disabled"
     },
     {
-      "policy" : "BLOCKLIST",
-      "rule_type" : "SIGNINGID",
-      "custom_url" : "",
-      "identifier" : "platform:com.apple.FaceTime",
-      "custom_msg" : "",
-      "comment" : "",
-      "cel_expr" : ""
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.FaceTime",
+      "custom_msg": "",
+      "comment": "FaceTime"
     },
     {
-      "policy" : "BLOCKLIST",
-      "rule_type" : "SIGNINGID",
-      "custom_url" : "",
-      "identifier" : "platform:com.apple.games",
-      "custom_msg" : "",
-      "comment" : "",
-      "cel_expr" : ""
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.games",
+      "custom_msg": "",
+      "comment": "Game Center"
     },
     {
-      "policy" : "BLOCKLIST",
-      "rule_type" : "SIGNINGID",
-      "custom_url" : "",
-      "identifier" : "platform:com.apple.Home",
-      "custom_msg" : "",
-      "comment" : "",
-      "cel_expr" : ""
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.Home",
+      "custom_msg": "",
+      "comment": "Home app"
     },
     {
-      "policy" : "BLOCKLIST",
-      "rule_type" : "SIGNINGID",
-      "custom_url" : "",
-      "identifier" : "platform:com.apple.journal",
-      "custom_msg" : "",
-      "comment" : "",
-      "cel_expr" : ""
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.journal",
+      "custom_msg": "",
+      "comment": "Journal"
     },
     {
-      "policy" : "BLOCKLIST",
-      "rule_type" : "SIGNINGID",
-      "custom_url" : "",
-      "identifier" : "platform:com.apple.mail",
-      "custom_msg" : "",
-      "comment" : "",
-      "cel_expr" : ""
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.mail",
+      "custom_msg": "",
+      "comment": "Apple Mail - using alternative"
     },
     {
-      "policy" : "BLOCKLIST",
-      "rule_type" : "SIGNINGID",
-      "custom_url" : "",
-      "identifier" : "platform:com.apple.Maps",
-      "custom_msg" : "",
-      "comment" : "",
-      "cel_expr" : ""
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.Maps",
+      "custom_msg": "",
+      "comment": "Maps"
     },
     {
-      "policy" : "BLOCKLIST",
-      "rule_type" : "SIGNINGID",
-      "custom_url" : "",
-      "identifier" : "platform:com.apple.MobileSMS",
-      "custom_msg" : "",
-      "comment" : "",
-      "cel_expr" : ""
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.MobileSMS",
+      "custom_msg": "",
+      "comment": "Messages"
     },
     {
-      "policy" : "BLOCKLIST",
-      "rule_type" : "SIGNINGID",
-      "custom_url" : "",
-      "identifier" : "platform:com.apple.Music",
-      "custom_msg" : "",
-      "comment" : "",
-      "cel_expr" : ""
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.Music",
+      "custom_msg": "",
+      "comment": "Music"
     },
     {
-      "policy" : "BLOCKLIST",
-      "rule_type" : "SIGNINGID",
-      "custom_url" : "",
-      "identifier" : "platform:com.apple.mobilephone",
-      "custom_msg" : "",
-      "comment" : "",
-      "cel_expr" : ""
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.mobilephone",
+      "custom_msg": "",
+      "comment": "Phone"
     },
     {
-      "policy" : "BLOCKLIST",
-      "rule_type" : "SIGNINGID",
-      "custom_url" : "",
-      "identifier" : "platform:com.apple.Photos",
-      "custom_msg" : "",
-      "comment" : "",
-      "cel_expr" : ""
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.Photos",
+      "custom_msg": "",
+      "comment": "Photos"
     },
     {
-      "policy" : "BLOCKLIST",
-      "rule_type" : "SIGNINGID",
-      "custom_url" : "",
-      "identifier" : "platform:com.apple.podcasts",
-      "custom_msg" : "",
-      "comment" : "",
-      "cel_expr" : ""
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.podcasts",
+      "custom_msg": "",
+      "comment": "Podcasts"
     },
     {
-      "policy" : "BLOCKLIST",
-      "rule_type" : "SIGNINGID",
-      "custom_url" : "",
-      "identifier" : "platform:com.apple.reminders",
-      "custom_msg" : "",
-      "comment" : "",
-      "cel_expr" : ""
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.reminders",
+      "custom_msg": "",
+      "comment": "Reminders"
     },
     {
-      "policy" : "BLOCKLIST",
-      "rule_type" : "SIGNINGID",
-      "custom_url" : "",
-      "identifier" : "platform:com.apple.Siri",
-      "custom_msg" : "",
-      "comment" : "",
-      "cel_expr" : ""
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.Siri",
+      "custom_msg": "",
+      "comment": "Siri"
     },
     {
-      "policy" : "BLOCKLIST",
-      "rule_type" : "SIGNINGID",
-      "custom_url" : "",
-      "identifier" : "platform:com.apple.Stickies",
-      "custom_msg" : "",
-      "comment" : "",
-      "cel_expr" : ""
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.Stickies",
+      "custom_msg": "",
+      "comment": "Stickies"
     },
     {
-      "policy" : "BLOCKLIST",
-      "rule_type" : "SIGNINGID",
-      "custom_url" : "",
-      "identifier" : "platform:com.apple.stocks",
-      "custom_msg" : "",
-      "comment" : "",
-      "cel_expr" : ""
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.stocks",
+      "custom_msg": "",
+      "comment": "Stocks"
     },
     {
-      "policy" : "BLOCKLIST",
-      "rule_type" : "SIGNINGID",
-      "custom_url" : "",
-      "identifier" : "platform:com.apple.helpviewer",
-      "custom_msg" : "",
-      "comment" : "",
-      "cel_expr" : ""
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.helpviewer",
+      "custom_msg": "",
+      "comment": "Help Viewer"
     },
     {
-      "policy" : "BLOCKLIST",
-      "rule_type" : "SIGNINGID",
-      "custom_url" : "",
-      "identifier" : "platform:com.apple.TV",
-      "custom_msg" : "",
-      "comment" : "",
-      "cel_expr" : ""
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.TV",
+      "custom_msg": "",
+      "comment": "Apple TV"
+    },
+    {
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.news",
+      "custom_msg": "",
+      "comment": "News"
+    },
+    {
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.freeform",
+      "custom_msg": "",
+      "comment": "Freeform"
+    },
+    {
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.amsengagementd",
+      "custom_msg": "",
+      "comment": "Apple Media Services engagement daemon"
+    },
+    {
+      "policy": "BLOCKLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.amp.mediasharingd",
+      "custom_msg": "",
+      "comment": "Media sharing daemon"
+    },
+    {
+      "policy": "ALLOWLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.ssh",
+      "custom_msg": "",
+      "comment": "SSH client - prevent lockout during key changes"
+    },
+    {
+      "policy": "ALLOWLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.ssh-agent",
+      "custom_msg": "",
+      "comment": "SSH agent"
+    },
+    {
+      "policy": "ALLOWLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.ssh-add",
+      "custom_msg": "",
+      "comment": "SSH key management"
+    },
+    {
+      "policy": "ALLOWLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.ssh-keygen",
+      "custom_msg": "",
+      "comment": "SSH key generation"
+    },
+    {
+      "policy": "ALLOWLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.git",
+      "custom_msg": "",
+      "comment": "Git"
+    },
+    {
+      "policy": "ALLOWLIST",
+      "rule_type": "SIGNINGID",
+      "identifier": "platform:com.apple.Terminal",
+      "custom_msg": "",
+      "comment": "Terminal"
+    },
+    {
+      "policy": "ALLOWLIST",
+      "rule_type": "TEAMID",
+      "identifier": "UBF8T346G9",
+      "custom_msg": "",
+      "comment": "Microsoft - VS Code, Office, etc"
+    },
+    {
+      "policy": "ALLOWLIST",
+      "rule_type": "TEAMID",
+      "identifier": "EQHXZ8M8AV",
+      "custom_msg": "",
+      "comment": "Google - Chrome"
+    },
+    {
+      "policy": "ALLOWLIST",
+      "rule_type": "TEAMID",
+      "identifier": "9BNSXJN65R",
+      "custom_msg": "",
+      "comment": "Docker Inc"
+    },
+    {
+      "policy": "ALLOWLIST",
+      "rule_type": "TEAMID",
+      "identifier": "VLUGQBAPZ5",
+      "custom_msg": "",
+      "comment": "Objective Development - Little Snitch"
+    },
+    {
+      "policy": "ALLOWLIST",
+      "rule_type": "TEAMID",
+      "identifier": "KYL8YCVN64",
+      "custom_msg": "",
+      "comment": "WireGuard"
     }
   ]
 }
