@@ -3,7 +3,13 @@
 <plist version="1.0">
   <dict>
     <key>Version</key>
-    <string>v2.0</string>
+    <string>v2.1-hardened</string>
+    
+    <key>EventDetailURL</key>
+    <string>https://security.internal/faa/%hostname%/%rule_name%/%file_identifier%</string>
+    <key>EventDetailText</key>
+    <string>Report Issue</string>
+    
     <key>WatchItems</key>
     <dict>
       <key>ChromeCookies</key>
@@ -18,6 +24,14 @@
             <key>Path</key>
             <string>/Users/*/Library/Application Support/Google/Chrome/*/Cookies-journal</string>
           </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/Library/Application Support/Google/Chrome/*/Network/Cookies</string>
+          </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/Library/Application Support/Google/Chrome/*/Network/Cookies-journal</string>
+          </dict>
         </array>
         <key>Options</key>
         <dict>
@@ -27,6 +41,8 @@
           <false />
           <key>RuleType</key>
           <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Chrome cookies are protected. Only Chrome can access this file.</string>
         </dict>
         <key>Processes</key>
         <array>
@@ -50,6 +66,7 @@
           </dict>
         </array>
       </dict>
+      
       <key>ChromeLoginData</key>
       <dict>
         <key>Paths</key>
@@ -66,6 +83,10 @@
             <key>Path</key>
             <string>/Users/*/Library/Application Support/Google/Chrome/*/Web Data</string>
           </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/Library/Application Support/Google/Chrome/*/Web Data-journal</string>
+          </dict>
         </array>
         <key>Options</key>
         <dict>
@@ -75,6 +96,8 @@
           <false />
           <key>RuleType</key>
           <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Chrome login data is protected.</string>
         </dict>
         <key>Processes</key>
         <array>
@@ -92,6 +115,7 @@
           </dict>
         </array>
       </dict>
+      
       <key>ChromeExtensions</key>
       <dict>
         <key>Paths</key>
@@ -111,6 +135,8 @@
           <false />
           <key>RuleType</key>
           <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Chrome extensions directory is write-protected.</string>
         </dict>
         <key>Processes</key>
         <array>
@@ -132,8 +158,15 @@
             <key>PlatformBinary</key>
             <true />
           </dict>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.mds</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
         </array>
       </dict>
+      
       <key>FirefoxSecrets</key>
       <dict>
         <key>Paths</key>
@@ -141,6 +174,10 @@
           <dict>
             <key>Path</key>
             <string>/Users/*/Library/Application Support/Firefox/Profiles/*/cookies.sqlite</string>
+          </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/Library/Application Support/Firefox/Profiles/*/cookies.sqlite-journal</string>
           </dict>
           <dict>
             <key>Path</key>
@@ -154,6 +191,10 @@
             <key>Path</key>
             <string>/Users/*/Library/Application Support/Firefox/Profiles/*/cert9.db</string>
           </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/Library/Application Support/Firefox/Profiles/*/signons.sqlite</string>
+          </dict>
         </array>
         <key>Options</key>
         <dict>
@@ -163,6 +204,8 @@
           <false />
           <key>RuleType</key>
           <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Firefox credentials are protected.</string>
         </dict>
         <key>Processes</key>
         <array>
@@ -174,6 +217,56 @@
           </dict>
         </array>
       </dict>
+      
+      <key>SafariSecrets</key>
+      <dict>
+        <key>Paths</key>
+        <array>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/Library/Cookies/Cookies.binarycookies</string>
+          </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/Library/Safari/LocalStorage</string>
+            <key>IsPrefix</key>
+            <true />
+          </dict>
+        </array>
+        <key>Options</key>
+        <dict>
+          <key>AllowReadAccess</key>
+          <false />
+          <key>AuditOnly</key>
+          <false />
+          <key>RuleType</key>
+          <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Safari cookies are protected.</string>
+        </dict>
+        <key>Processes</key>
+        <array>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.Safari</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.Safari.SandboxBroker</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.WebKit.Networking</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
+        </array>
+      </dict>
+      
       <key>SlackSecrets</key>
       <dict>
         <key>Paths</key>
@@ -181,6 +274,10 @@
           <dict>
             <key>Path</key>
             <string>/Users/*/Library/Application Support/Slack/Cookies</string>
+          </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/Library/Application Support/Slack/Cookies-journal</string>
           </dict>
           <dict>
             <key>Path</key>
@@ -201,6 +298,8 @@
           <false />
           <key>RuleType</key>
           <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Slack credentials are protected.</string>
         </dict>
         <key>Processes</key>
         <array>
@@ -210,8 +309,15 @@
             <key>TeamID</key>
             <string>BQR82RBBHL</string>
           </dict>
+          <dict>
+            <key>SigningID</key>
+            <string>com.tinyspeck.slackmacgap.helper</string>
+            <key>TeamID</key>
+            <string>BQR82RBBHL</string>
+          </dict>
         </array>
       </dict>
+      
       <key>DiscordSecrets</key>
       <dict>
         <key>Paths</key>
@@ -235,6 +341,8 @@
           <false />
           <key>RuleType</key>
           <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Discord credentials are protected.</string>
         </dict>
         <key>Processes</key>
         <array>
@@ -246,6 +354,7 @@
           </dict>
         </array>
       </dict>
+      
       <key>ElectronAppResources</key>
       <dict>
         <key>Paths</key>
@@ -273,6 +382,8 @@
           <false />
           <key>RuleType</key>
           <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Electron app resources are protected from modification.</string>
         </dict>
         <key>Processes</key>
         <array>
@@ -296,6 +407,7 @@
           </dict>
         </array>
       </dict>
+      
       <key>SSHPrivateKeys</key>
       <dict>
         <key>Paths</key>
@@ -316,6 +428,10 @@
             <key>Path</key>
             <string>/Users/*/.ssh/*_ecdsa</string>
           </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/.ssh/*_dsa</string>
+          </dict>
         </array>
         <key>Options</key>
         <dict>
@@ -325,6 +441,8 @@
           <false />
           <key>RuleType</key>
           <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>SSH private keys are protected.</string>
         </dict>
         <key>Processes</key>
         <array>
@@ -348,12 +466,31 @@
           </dict>
           <dict>
             <key>SigningID</key>
+            <string>com.apple.ssh-keygen</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
+          <dict>
+            <key>SigningID</key>
             <string>com.apple.git</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.scp</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.sftp</string>
             <key>PlatformBinary</key>
             <true />
           </dict>
         </array>
       </dict>
+      
       <key>SSHConfig</key>
       <dict>
         <key>Paths</key>
@@ -366,21 +503,33 @@
             <key>Path</key>
             <string>/Users/*/.ssh/authorized_keys</string>
           </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/.ssh/known_hosts</string>
+          </dict>
         </array>
         <key>Options</key>
         <dict>
           <key>AllowReadAccess</key>
           <true />
           <key>AuditOnly</key>
-          <true />
+          <false />
           <key>RuleType</key>
           <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>SSH config files are write-protected.</string>
         </dict>
         <key>Processes</key>
         <array>
           <dict>
             <key>SigningID</key>
             <string>com.apple.ssh</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.ssh-keygen</string>
             <key>PlatformBinary</key>
             <true />
           </dict>
@@ -402,8 +551,14 @@
             <key>PlatformBinary</key>
             <true />
           </dict>
+          <dict>
+            <key>TeamID</key>
+            <string>UBF8T346G9</string>
+          </dict>
         </array>
       </dict>
+      
+      <!-- todo: lax gpg processes -->
       <key>GPGPrivateKeys</key>
       <dict>
         <key>Paths</key>
@@ -418,6 +573,10 @@
             <key>Path</key>
             <string>/Users/*/.gnupg/secring.gpg</string>
           </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/.gnupg/trustdb.gpg</string>
+          </dict>
         </array>
         <key>Options</key>
         <dict>
@@ -427,11 +586,40 @@
           <false />
           <key>RuleType</key>
           <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>GPG private keys are protected.</string>
         </dict>
         <key>Processes</key>
         <array>
+          <dict>
+            <key>BinaryPath</key>
+            <string>/opt/local/bin/gpg</string>
+          </dict>
+          <dict>
+            <key>BinaryPath</key>
+            <string>/opt/local/bin/gpg2</string>
+          </dict>
+          <dict>
+            <key>BinaryPath</key>
+            <string>/opt/local/libexec/gnupg/gpg-agent</string>
+          </dict>
+          <dict>
+            <key>BinaryPath</key>
+            <string>/usr/local/bin/gpg</string>
+          </dict>
+          <dict>
+            <key>BinaryPath</key>
+            <string>/usr/local/bin/gpg-agent</string>
+          </dict>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.git</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
         </array>
       </dict>
+      
       <key>PasswordStore</key>
       <dict>
         <key>Paths</key>
@@ -466,10 +654,50 @@
             <key>PlatformBinary</key>
             <true />
           </dict>
+          <dict>
+            <key>BinaryPath</key>
+            <string>/opt/local/bin/gpg</string>
+          </dict>
         </array>
       </dict>
       <key>CloudCredentials</key>
       <dict>
+        <key>Paths</key>
+        <array>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/.aws/credentials</string>
+          </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/.aws/config</string>
+          </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/.config/gcloud</string>
+            <key>IsPrefix</key>
+            <true />
+          </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/.azure</string>
+            <key>IsPrefix</key>
+            <true />
+          </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/.kube/config</string>
+          </dict>
+        </array>
+        <key>Options</key>
+        <dict>
+          <key>AllowReadAccess</key>
+          <false />
+          <key>AuditOnly</key>
+          <true /> 
+          <key>RuleType</key>
+          <string>PathsWithAllowedProcesses</string>
+        </dict>
         <key>Processes</key>
         <array>
           <dict>
@@ -484,6 +712,7 @@
           </dict>
         </array>
       </dict>
+      
       <key>GitCredentials</key>
       <dict>
         <key>Paths</key>
@@ -491,6 +720,10 @@
           <dict>
             <key>Path</key>
             <string>/Users/*/.git-credentials</string>
+          </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/.gitconfig</string>
           </dict>
         </array>
         <key>Options</key>
@@ -501,6 +734,8 @@
           <false />
           <key>RuleType</key>
           <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Git credentials are protected.</string>
         </dict>
         <key>Processes</key>
         <array>
@@ -510,8 +745,21 @@
             <key>PlatformBinary</key>
             <true />
           </dict>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.vim</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.nano</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
         </array>
       </dict>
+       
       <key>PAMConfig</key>
       <dict>
         <key>Paths</key>
@@ -531,6 +779,8 @@
           <false />
           <key>RuleType</key>
           <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>PAM configuration is protected from modification.</string>
         </dict>
         <key>Processes</key>
         <array>
@@ -542,6 +792,7 @@
           </dict>
         </array>
       </dict>
+      
       <key>Sudoers</key>
       <dict>
         <key>Paths</key>
@@ -556,6 +807,12 @@
             <key>IsPrefix</key>
             <true />
           </dict>
+          <dict>
+            <key>Path</key>
+            <string>/private/var/db/sudo/ts</string>
+            <key>IsPrefix</key>
+            <true />
+          </dict>
         </array>
         <key>Options</key>
         <dict>
@@ -565,6 +822,8 @@
           <false />
           <key>RuleType</key>
           <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Sudoers configuration is protected. Use visudo.</string>
         </dict>
         <key>Processes</key>
         <array>
@@ -590,15 +849,21 @@
             <key>Path</key>
             <string>/private/etc/hosts</string>
           </dict>
+          <dict>
+            <key>Path</key>
+            <string>/private/etc/resolv.conf</string>
+          </dict>
         </array>
         <key>Options</key>
         <dict>
           <key>AllowReadAccess</key>
           <true />
           <key>AuditOnly</key>
-          <true />
+          <false />
           <key>RuleType</key>
           <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Network configuration files are protected.</string>
         </dict>
         <key>Processes</key>
         <array>
@@ -614,8 +879,15 @@
             <key>PlatformBinary</key>
             <true />
           </dict>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.configd</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
         </array>
       </dict>
+      
       <key>LaunchDaemons</key>
       <dict>
         <key>Paths</key>
@@ -638,6 +910,18 @@
             <key>IsPrefix</key>
             <true />
           </dict>
+          <dict>
+            <key>Path</key>
+            <string>/System/Library/LaunchDaemons</string>
+            <key>IsPrefix</key>
+            <true />
+          </dict>
+          <dict>
+            <key>Path</key>
+            <string>/System/Library/LaunchAgents</string>
+            <key>IsPrefix</key>
+            <true />
+          </dict>
         </array>
         <key>Options</key>
         <dict>
@@ -647,6 +931,8 @@
           <false />
           <key>RuleType</key>
           <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>LaunchAgents/Daemons are protected from modification.</string>
         </dict>
         <key>Processes</key>
         <array>
@@ -664,6 +950,7 @@
           </dict>
         </array>
       </dict>
+      
       <key>CronJobs</key>
       <dict>
         <key>Paths</key>
@@ -689,11 +976,20 @@
           <false />
           <key>RuleType</key>
           <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Cron jobs are protected from direct modification.</string>
         </dict>
         <key>Processes</key>
         <array>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.crontab</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
         </array>
       </dict>
+      
       <key>PeriodicScripts</key>
       <dict>
         <key>Paths</key>
@@ -713,6 +1009,8 @@
           <false />
           <key>RuleType</key>
           <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Periodic scripts are protected.</string>
         </dict>
         <key>Processes</key>
         <array>
@@ -724,6 +1022,7 @@
           </dict>
         </array>
       </dict>
+      
       <key>RCScriptsEmond</key>
       <dict>
         <key>Paths</key>
@@ -731,6 +1030,10 @@
           <dict>
             <key>Path</key>
             <string>/private/etc/rc.local</string>
+          </dict>
+          <dict>
+            <key>Path</key>
+            <string>/private/etc/rc.common</string>
           </dict>
           <dict>
             <key>Path</key>
@@ -747,11 +1050,13 @@
           <false />
           <key>RuleType</key>
           <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Startup scripts are protected.</string>
         </dict>
         <key>Processes</key>
-        <array>
-        </array>
+        <array></array>
       </dict>
+
       <key>ShellRCFiles</key>
       <dict>
         <key>Paths</key>
@@ -770,6 +1075,10 @@
           </dict>
           <dict>
             <key>Path</key>
+            <string>/Users/*/.zlogin</string>
+          </dict>
+          <dict>
+            <key>Path</key>
             <string>/Users/*/.bashrc</string>
           </dict>
           <dict>
@@ -778,11 +1087,19 @@
           </dict>
           <dict>
             <key>Path</key>
+            <string>/Users/*/.bash_login</string>
+          </dict>
+          <dict>
+            <key>Path</key>
             <string>/Users/*/.profile</string>
           </dict>
           <dict>
             <key>Path</key>
             <string>/private/etc/zshrc</string>
+          </dict>
+          <dict>
+            <key>Path</key>
+            <string>/private/etc/zshenv</string>
           </dict>
           <dict>
             <key>Path</key>
@@ -798,9 +1115,11 @@
           <key>AllowReadAccess</key>
           <true />
           <key>AuditOnly</key>
-          <true />
+          <false />
           <key>RuleType</key>
           <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Shell configuration files are protected.</string>
         </dict>
         <key>Processes</key>
         <array>
@@ -834,8 +1153,293 @@
             <key>PlatformBinary</key>
             <true />
           </dict>
+          <dict>
+            <key>TeamID</key>
+            <string>UBF8T346G9</string>
+          </dict>
         </array>
       </dict>
+      <key>LoginLogoutHooks</key>
+      <dict>
+        <key>Paths</key>
+        <array>
+          <dict>
+            <key>Path</key>
+            <string>/private/var/root/Library/Preferences/com.apple.loginwindow.plist</string>
+          </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/Library/Preferences/com.apple.loginwindow.plist</string>
+          </dict>
+        </array>
+        <key>Options</key>
+        <dict>
+          <key>AllowReadAccess</key>
+          <true />
+          <key>AuditOnly</key>
+          <false />
+          <key>RuleType</key>
+          <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Login hooks are protected.</string>
+        </dict>
+        <key>Processes</key>
+        <array>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.cfprefsd</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
+        </array>
+      </dict>
+      <key>SpotlightImporters</key>
+      <dict>
+        <key>Paths</key>
+        <array>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/Library/Spotlight</string>
+            <key>IsPrefix</key>
+            <true />
+          </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Library/Spotlight</string>
+            <key>IsPrefix</key>
+            <true />
+          </dict>
+        </array>
+        <key>Options</key>
+        <dict>
+          <key>AllowReadAccess</key>
+          <true />
+          <key>AuditOnly</key>
+          <false />
+          <key>EnableSilentMode</key>
+          <true />
+          <key>RuleType</key>
+          <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Spotlight plugin installation blocked.</string>
+        </dict>
+        <key>Processes</key>
+        <array>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.mds</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.mdworker</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.mdworker_shared</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.mdimport</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.installer</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
+        </array>
+      </dict>
+      <key>AuthorizationPlugins</key>
+      <dict>
+        <key>Paths</key>
+        <array>
+          <dict>
+            <key>Path</key>
+            <string>/Library/Security/SecurityAgentPlugins</string>
+            <key>IsPrefix</key>
+            <true />
+          </dict>
+        </array>
+        <key>Options</key>
+        <dict>
+          <key>AllowReadAccess</key>
+          <true />
+          <key>AuditOnly</key>
+          <false />
+          <key>RuleType</key>
+          <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Authorization plugins directory is protected.</string>
+        </dict>
+        <key>Processes</key>
+        <array>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.installer</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
+        </array>
+      </dict>
+      <key>ScriptingAdditions</key>
+      <dict>
+        <key>Paths</key>
+        <array>
+          <dict>
+            <key>Path</key>
+            <string>/Library/ScriptingAdditions</string>
+            <key>IsPrefix</key>
+            <true />
+          </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/Library/ScriptingAdditions</string>
+            <key>IsPrefix</key>
+            <true />
+          </dict>
+        </array>
+        <key>Options</key>
+        <dict>
+          <key>AllowReadAccess</key>
+          <true />
+          <key>AuditOnly</key>
+          <false />
+          <key>RuleType</key>
+          <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Scripting additions directory is protected.</string>
+        </dict>
+        <key>Processes</key>
+        <array>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.installer</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
+        </array>
+      </dict>
+      <key>InputMethods</key>
+      <dict>
+        <key>Paths</key>
+        <array>
+          <dict>
+            <key>Path</key>
+            <string>/Library/Input Methods</string>
+            <key>IsPrefix</key>
+            <true />
+          </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/Library/Input Methods</string>
+            <key>IsPrefix</key>
+            <true />
+          </dict>
+        </array>
+        <key>Options</key>
+        <dict>
+          <key>AllowReadAccess</key>
+          <true />
+          <key>AuditOnly</key>
+          <false />
+          <key>RuleType</key>
+          <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Input methods directory is protected.</string>
+        </dict>
+        <key>Processes</key>
+        <array>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.installer</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
+        </array>
+      </dict>
+      <key>DockerSettings</key>
+      <dict>
+        <key>Paths</key>
+        <array>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/Library/Group Containers/group.com.docker</string>
+            <key>IsPrefix</key>
+            <true />
+          </dict>
+        </array>
+        <key>Options</key>
+        <dict>
+          <key>AllowReadAccess</key>
+          <true />
+          <key>AuditOnly</key>
+          <false />
+          <key>RuleType</key>
+          <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Docker Desktop settings are protected.</string>
+        </dict>
+        <key>Processes</key>
+        <array>
+          <dict>
+            <key>TeamID</key>
+            <string>9BNSXJN65R</string>
+          </dict>
+        </array>
+      </dict>
+      <key>KernelExtensions</key>
+      <dict>
+        <key>Paths</key>
+        <array>
+          <dict>
+            <key>Path</key>
+            <string>/Library/Extensions</string>
+            <key>IsPrefix</key>
+            <true />
+          </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Library/StagedExtensions</string>
+            <key>IsPrefix</key>
+            <true />
+          </dict>
+        </array>
+        <key>Options</key>
+        <dict>
+          <key>AllowReadAccess</key>
+          <true />
+          <key>AuditOnly</key>
+          <false />
+          <key>RuleType</key>
+          <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>Kernel extension directories are protected.</string>
+        </dict>
+        <key>Processes</key>
+        <array>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.installer</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.kextutil</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
+        </array>
+      </dict>
+      
       <key>Keychain</key>
       <dict>
         <key>Paths</key>
@@ -843,6 +1447,12 @@
           <dict>
             <key>Path</key>
             <string>/Users/*/Library/Keychains</string>
+            <key>IsPrefix</key>
+            <true />
+          </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Library/Keychains</string>
             <key>IsPrefix</key>
             <true />
           </dict>
@@ -870,10 +1480,32 @@
             <key>PlatformBinary</key>
             <true />
           </dict>
+          <dict>
+            <key>SigningID</key>
+            <string>com.apple.KeychainAccess</string>
+            <key>PlatformBinary</key>
+            <true />
+          </dict>
         </array>
       </dict>
+
       <key>TCC</key>
       <dict>
+        <key>Paths</key>
+        <array>
+          <dict>
+            <key>Path</key>
+            <string>/Library/Application Support/com.apple.TCC/TCC.db</string>
+          </dict>
+          <dict>
+            <key>Path</key>
+            <string>/Users/*/Library/Application Support/com.apple.TCC/TCC.db</string>
+          </dict>
+          <dict>
+            <key>Path</key>
+            <string>/private/var/db/locationd/clients.plist</string>
+          </dict>
+        </array>
         <key>Options</key>
         <dict>
           <key>AllowReadAccess</key>
@@ -882,6 +1514,8 @@
           <false />
           <key>RuleType</key>
           <string>PathsWithAllowedProcesses</string>
+          <key>BlockMessage</key>
+          <string>TCC database is protected.</string>
         </dict>
         <key>Processes</key>
         <array>
