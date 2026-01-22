@@ -1,0 +1,380 @@
+{
+  "name": "Privacy Hardening Rules",
+  "description": "Blocks telemetry, analytics, and tracking beyond Steven Black's hosts list. Focuses on: macOS phone-home, developer tool telemetry, crash reporting, and fingerprinting services.",
+  "rules": [
+    {
+      "notes": "=== APPLE TELEMETRY (not blocked by hosts lists) ===",
+      "action": "deny",
+      "process": "any",
+      "remote-domains": [
+        "xp.apple.com",
+        "xp-cdn.apple.com",
+        "metrics.apple.com",
+        "metrics.icloud.com",
+        "securemetrics.apple.com",
+        "supportmetrics.apple.com",
+        "books-analytics.apple.com",
+        "weather-analytics.apple.com",
+        "notes-analytics.apple.com",
+        "stocks-analytics.apple.com"
+      ]
+    },
+    {
+      "notes": "Apple experiment/feature flags",
+      "action": "deny",
+      "process": "any",
+      "remote-domains": [
+        "experiment.apple.com",
+        "pancake.apple.com",
+        "seq.apple.com",
+        "bag.apple.com",
+        "init.apple.com"
+      ]
+    },
+    {
+      "notes": "Apple diagnostics",
+      "action": "deny",
+      "process": "any",
+      "remote-domains": [
+        "radarsubmissions.apple.com",
+        "submit.apple.com",
+        "feedbackws.apple.com",
+        "fba.apple.com",
+        "iad-diagnostics.apple.com"
+      ]
+    },
+    {
+      "notes": "=== CRASH REPORTING SERVICES ===",
+      "action": "deny",
+      "process": "any",
+      "remote-domains": [
+        "crashlytics.com",
+        "crashlyticsreports-pa.googleapis.com",
+        "firebase-settings.crashlytics.com",
+        "sessions.bugsnag.com",
+        "notify.bugsnag.com",
+        "api.bugsnag.com",
+        "ingest.sentry.io",
+        "sentry.io",
+        "o0.ingest.sentry.io",
+        "api.rollbar.com",
+        "raygun.io",
+        "api.raygun.io",
+        "crashes.to",
+        "api.instabug.com",
+        "backtrace.io",
+        "submit.backtrace.io"
+      ]
+    },
+    {
+      "notes": "=== ANALYTICS PLATFORMS (beyond ad blockers) ===",
+      "action": "deny",
+      "process": "any",
+      "remote-domains": [
+        "amplitude.com",
+        "api.amplitude.com",
+        "api2.amplitude.com",
+        "cdn.amplitude.com",
+        "mixpanel.com",
+        "api.mixpanel.com",
+        "decide.mixpanel.com",
+        "api-js.mixpanel.com",
+        "heap.io",
+        "heapanalytics.com",
+        "cdn.heapanalytics.com",
+        "fullstory.com",
+        "rs.fullstory.com",
+        "edge.fullstory.com",
+        "logrocket.com",
+        "r.lr-ingest.io",
+        "r.lr-in.com",
+        "hotjar.com",
+        "static.hotjar.com",
+        "script.hotjar.com",
+        "vars.hotjar.com",
+        "pendo.io",
+        "app.pendo.io",
+        "cdn.pendo.io",
+        "data.pendo.io"
+      ]
+    },
+    {
+      "notes": "=== DEVELOPER TOOL TELEMETRY ===",
+      "action": "deny",
+      "process": "any",
+      "remote-domains": [
+        "dc.services.visualstudio.com",
+        "vortex.data.microsoft.com",
+        "mobile.events.data.microsoft.com",
+        "browser.events.data.microsoft.com",
+        "self.events.data.microsoft.com",
+        "functional.events.data.microsoft.com",
+        "telemetry.eclipse.org",
+        "stats.jetbrains.com",
+        "resources.jetbrains.com"
+      ]
+    },
+    {
+      "notes": "VS Code specific telemetry",
+      "action": "deny",
+      "process": "com.microsoft.VSCode",
+      "remote-domains": [
+        "vscode.dev",
+        "default.exp-tas.com",
+        "vscode-sync.trafficmanager.net",
+        "vscode-sync-insiders.trafficmanager.net"
+      ]
+    },
+    {
+      "notes": "=== ATTRIBUTION / DEEP LINKING ===",
+      "action": "deny",
+      "process": "any",
+      "remote-domains": [
+        "app.adjust.com",
+        "app.adjust.io",
+        "app.appsflyer.com",
+        "launches.appsflyer.com",
+        "register.appsflyer.com",
+        "t.appsflyer.com",
+        "branch.io",
+        "api2.branch.io",
+        "cdn.branch.io",
+        "app.link",
+        "bnc.lt",
+        "kochava.com",
+        "control.kochava.com",
+        "tenjin.io",
+        "track.tenjin.io"
+      ]
+    },
+    {
+      "notes": "=== A/B TESTING / FEATURE FLAGS ===",
+      "action": "deny",
+      "process": "any",
+      "remote-domains": [
+        "cdn.optimizely.com",
+        "logx.optimizely.com",
+        "launchdarkly.com",
+        "events.launchdarkly.com",
+        "clientsdk.launchdarkly.com",
+        "app.launchdarkly.com",
+        "split.io",
+        "events.split.io",
+        "sdk.split.io",
+        "statsig.com",
+        "api.statsig.com",
+        "featurehub.io",
+        "growthbook.io"
+      ]
+    },
+    {
+      "notes": "=== SESSION RECORDING / HEATMAPS ===",
+      "action": "deny",
+      "process": "any",
+      "remote-domains": [
+        "clarity.ms",
+        "mouseflow.com",
+        "api.mouseflow.com",
+        "cdn.mouseflow.com",
+        "luckyorange.com",
+        "w1.luckyorange.com",
+        "settings.luckyorange.net",
+        "smartlook.com",
+        "manager.smartlook.com",
+        "rec.smartlook.com"
+      ]
+    },
+    {
+      "notes": "=== BROWSER FINGERPRINTING SERVICES ===",
+      "action": "deny",
+      "process": "any",
+      "remote-domains": [
+        "api.fpjs.io",
+        "fpjs.io",
+        "fingerprintjs.com",
+        "api.fingerprintjs.com",
+        "tls.fingerprintjs.com",
+        "iovation.com",
+        "ci-mpsnare.iovation.com",
+        "mpsnare.iesnare.com",
+        "threatmetrix.com",
+        "h.online-metrix.net",
+        "cdn.riskified.com"
+      ]
+    },
+    {
+      "notes": "=== CUSTOMER DATA PLATFORMS ===",
+      "action": "deny",
+      "process": "any",
+      "remote-domains": [
+        "api.segment.io",
+        "cdn.segment.io",
+        "cdn.segment.com",
+        "api.segment.com",
+        "events.rudderstack.com",
+        "hosted.rudderlabs.com",
+        "api.mparticle.com",
+        "jssdks.mparticle.com",
+        "identity.mparticle.com",
+        "t.co"
+      ]
+    },
+    {
+      "notes": "=== NOTIFICATION / ENGAGEMENT SERVICES ===",
+      "action": "deny",
+      "process": "any",
+      "remote-domains": [
+        "onesignal.com",
+        "api.onesignal.com",
+        "cdn.onesignal.com",
+        "braze.com",
+        "sdk.iad-01.braze.com",
+        "sdk.iad-02.braze.com",
+        "sdk.iad-03.braze.com",
+        "customer.io",
+        "track.customer.io",
+        "intercom.io",
+        "api-iam.intercom.io",
+        "widget.intercom.io"
+      ]
+    },
+    {
+      "notes": "=== GOOGLE (beyond ad blocking) ===",
+      "action": "deny",
+      "process": "any",
+      "remote-domains": [
+        "firebaselogging.googleapis.com",
+        "firebaselogging-pa.googleapis.com",
+        "firebaseremoteconfig.googleapis.com",
+        "firebaseinstallations.googleapis.com",
+        "app-measurement.com",
+        "firebase-settings.crashlytics.com",
+        "play.googleapis.com",
+        "update.googleapis.com",
+        "clientservices.googleapis.com"
+      ]
+    },
+    {
+      "notes": "=== NPM / NODE TELEMETRY ===",
+      "action": "deny",
+      "process": "any",
+      "remote-domains": [
+        "api.npms.io",
+        "npmjs.com/npm/@segment",
+        "npm.sentry.io"
+      ]
+    },
+    {
+      "notes": "=== HOMEBREW ANALYTICS ===",
+      "action": "deny",
+      "process": "any",
+      "remote-domains": [
+        "formulae.brew.sh"
+      ],
+      "notes_2": "Note: This blocks analytics reporting but may affect formula updates. Consider allowing if needed."
+    },
+    {
+      "notes": "=== CLOUD METADATA (prevents SSRF-like issues in local apps) ===",
+      "action": "deny",
+      "process": "any",
+      "remote-hosts": [
+        "169.254.169.254",
+        "metadata.google.internal"
+      ]
+    },
+    {
+      "notes": "=== TIME-BASED TRACKING (Canvas LMS, etc) ===",
+      "action": "deny",
+      "process": "any",
+      "remote-domains": [
+        "inst-fs-iad-prod.inscloudgate.net",
+        "pandastream.com"
+      ]
+    },
+    {
+      "notes": "=== ERROR TRACKING OFTEN MISSED ===",
+      "action": "deny",
+      "process": "any",
+      "remote-domains": [
+        "trackjs.com",
+        "d2zah9y47r7bi2.cloudfront.net",
+        "loggly.com",
+        "logs-01.loggly.com",
+        "datadog.com",
+        "browser-intake-datadoghq.com",
+        "rum.browser-intake-datadoghq.com",
+        "logs.browser-intake-datadoghq.com",
+        "newrelic.com",
+        "bam.nr-data.net",
+        "js-agent.newrelic.com",
+        "dynatrace.com",
+        "bf.dynatrace.com",
+        "elastic-cloud.com",
+        "apm.elastic.co"
+      ]
+    },
+    {
+      "notes": "=== ALLOW: Essential Services ===",
+      "action": "allow",
+      "process": "any",
+      "remote-domains": [
+        "time.apple.com",
+        "time.euro.apple.com",
+        "time.asia.apple.com"
+      ],
+      "notes_2": "NTP - required for accurate time"
+    },
+    {
+      "notes": "Allow OCSP/CRL for certificate validation",
+      "action": "allow",
+      "process": "any",
+      "remote-domains": [
+        "ocsp.apple.com",
+        "ocsp2.apple.com",
+        "crl.apple.com",
+        "valid.apple.com",
+        "ocsp.digicert.com",
+        "ocsp.sectigo.com",
+        "ocsp.comodoca.com",
+        "crl.microsoft.com",
+        "ocsp.msocsp.com"
+      ]
+    },
+    {
+      "notes": "Allow macOS software updates",
+      "action": "allow",
+      "process": "com.apple.softwareupdated",
+      "remote-domains": [
+        "swscan.apple.com",
+        "swdist.apple.com",
+        "swdownload.apple.com",
+        "swcdn.apple.com",
+        "updates.cdn-apple.com",
+        "updates-http.cdn-apple.com"
+      ]
+    },
+    {
+      "notes": "Allow Santa sync (if using a sync server)",
+      "action": "allow",
+      "process": "com.northpolesec.santa.daemon",
+      "remote": "any"
+    },
+    {
+      "notes": "Allow DNSCrypt-proxy",
+      "action": "allow",
+      "process": "dnscrypt-proxy",
+      "remote": "any",
+      "ports": "443,853"
+    },
+    {
+      "notes": "Allow Unbound DNS",
+      "action": "allow",
+      "process": "unbound",
+      "remote-hosts": [
+        "127.0.0.1",
+        "::1"
+      ],
+      "ports": "53,54"
+    }
+  ]
+}

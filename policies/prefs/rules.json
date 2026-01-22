@@ -1,0 +1,100 @@
+{
+  "_meta": {
+    "description": "Santa supplementary rules for sync server or santactl",
+    "version": "2.1",
+    "note": "Add in additional vendors & hash-based rules"
+  },
+
+  "rules": [
+    { "_section": "Additional team id allowlists" },
+    {
+      "_note": "Core vendors (Microsoft, Google, Docker, Little Snitch, WireGuard) are in StaticRules"
+    },
+    {
+      "policy": "ALLOWLIST",
+      "rule_type": "TEAMID",
+      "identifier": "43AQ936H96",
+      "comment": "Mozilla - Firefox, Thunderbird"
+    },
+    {
+      "policy": "ALLOWLIST",
+      "rule_type": "TEAMID",
+      "identifier": "BQR82RBBHL",
+      "comment": "Slack Technologies"
+    },
+    {
+      "policy": "ALLOWLIST",
+      "rule_type": "TEAMID",
+      "identifier": "53Q6R32WPB",
+      "comment": "Discord Inc"
+    },
+    {
+      "policy": "ALLOWLIST",
+      "rule_type": "TEAMID",
+      "identifier": "2UYBER83LD",
+      "comment": "Anthropic - Claude"
+    },
+    {
+      "policy": "ALLOWLIST",
+      "rule_type": "TEAMID",
+      "identifier": "QWY4LRW926",
+      "comment": "AgileBits - 1Password"
+    },
+    {
+      "policy": "ALLOWLIST",
+      "rule_type": "TEAMID",
+      "identifier": "N82Y98DJSN",
+      "comment": "Zoom Video Communications"
+    },
+    {
+      "policy": "ALLOWLIST",
+      "rule_type": "TEAMID",
+      "identifier": "P5TKG74YM7",
+      "comment": "JetBrains - IntelliJ, PyCharm, etc"
+    },
+
+    { "_section": "cdhash version locks" },
+    {
+      "_note": "Lock critical binaries to specific versions. Get hash: codesign -dvvv /path/to/binary 2>&1 | grep CDHash"
+    },
+    {
+      "policy": "ALLOWLIST",
+      "rule_type": "CDHASH",
+      "identifier": "REPLACE_WITH_SSH_CDHASH",
+      "comment": "TEMPLATE: Lock /usr/bin/ssh to specific version",
+      "_enabled": false
+    },
+    {
+      "policy": "ALLOWLIST",
+      "rule_type": "CDHASH",
+      "identifier": "REPLACE_WITH_SUDO_CDHASH",
+      "comment": "TEMPLATE: Lock /usr/bin/sudo to specific version",
+      "_enabled": false
+    },
+
+    { "_section": "SHA256 Blacklist Template" },
+    { "_note": "Add known malware SHA256 hashes from open sources" },
+
+    {
+      "policy": "BLOCKLIST",
+      "rule_type": "BINARY",
+      "identifier": "REPLACE_WITH_MALWARE_SHA256",
+      "custom_msg": "Known malware blocked.",
+      "comment": "TEMPLATE: Add malware hashes",
+      "_enabled": false
+    },
+
+    { "_section": "Certificate Blacklist Template" },
+    {
+      "_note": "Block all binaries signed with a compromised/revoked certificate"
+    },
+    {
+      "policy": "BLOCKLIST",
+      "rule_type": "CERTIFICATE",
+      "identifier": "REPLACE_WITH_CERT_SHA256",
+      "custom_msg": "Blocked: Signed with untrusted certificate.",
+      "comment": "TEMPLATE: Block compromised signing certificates",
+      "_enabled": false
+    }
+  ]
+}

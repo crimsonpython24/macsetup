@@ -17,12 +17,19 @@
     <key>PayloadContent</key>
     <array>
       <dict>
+        <key>ClientMode</key>
+        <integer>2</integer>
+        <key>FailClosed</key>
+        <true />
         <key>EnableBadSignatureProtection</key>
         <true />
         <key>EnablePageZeroProtection</key>
         <true />
         <key>EnableTransitiveRules</key>
         <true />
+        <key>EnableAllEventUpload</key>
+        <true />
+
         <key>BlockUSBMount</key>
         <false />
         <key>RemountUSBMode</key>
@@ -30,33 +37,463 @@
           <string>noexec</string>
           <string>nosuid</string>
           <string>nodev</string>
+          <string>rdonly</string>
         </array>
         <key>OnStartUSBOptions</key>
         <string>ForceRemount</string>
+        
         <key>FileAccessPolicyPlist</key>
         <string>/var/db/santa/faa_policy.plist</string>
         <key>FileAccessPolicyUpdateIntervalSec</key>
-        <integer>300</integer>
+        <integer>60</integer>
+        
         <key>BannedBlockMessage</key>
-        <string>This application has been blocked by Santa security policy.</string>
+        <string>BLOCKED: This binary is explicitly banned by security policy.</string>
         <key>UnknownBlockMessage</key>
-        <string>This application is not recognized and has been blocked.</string>
+        <string>BLOCKED: Unrecognized binary. Contact IT if this is legitimate software.</string>
         <key>BannedUSBBlockMessage</key>
-        <string>This USB device has been blocked by security policy.</string>
+        <string>BLOCKED: USB storage devices are restricted.</string>
         <key>RemountUSBBlockMessage</key>
-        <string>This USB device has been remounted with restricted permissions.</string>
+        <string>USB remounted with security restrictions (read-only, no execution).</string>
         <key>FileAccessBlockMessage</key>
-        <string>File access blocked by security policy.</string>
+        <string>BLOCKED: Unauthorized file access attempt detected.</string>
+        
         <key>EnableNotificationSilences</key>
         <false />
         <key>EnableSilentMode</key>
         <false />
         <key>EnableSilentTTYMode</key>
         <false />
+
         <key>Telemetry</key>
         <array>
           <string>Everything</string>
         </array>
+
+        <key>StaticRules</key>
+        <array>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.osascript</string>
+            <key>CELProgram</key>
+            <string>(
+              args.join(" ").lowerAscii().matches(".*\\W+with\\W+hidden\\W+answer.*") ||
+              args.join(" ").lowerAscii().contains("password")
+            ) &amp;&amp;
+              args.join(" ").lowerAscii().matches(".*\\W+display\\W+dialog.*") ? BLOCKLIST : ALLOWLIST
+            </string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.spctl</string>
+            <key>CELProgram</key>
+            <string>[
+              '--global-disable',
+              '--master-disable',
+              '--disable',
+              '--add',
+              '--remove'
+            ].exists(flag, flag in args) ? BLOCKLIST : ALLOWLIST
+            </string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.touch</string>
+            <key>CELProgram</key>
+            <string>args.exists(arg, arg in ['-a', '-m', '-r', '-A', '-t']) &amp;&amp;
+              args.join(" ").contains("Library/Launch") ? BLOCKLIST : ALLOWLIST
+            </string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.systemsetup</string>
+            <key>CELProgram</key>
+            <string>args.join(" ").contains("-setremotelogin on") ||
+              args.join(" ").contains("-setremoteappleevents on") ? BLOCKLIST : ALLOWLIST
+            </string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.mount_apfs</string>
+            <key>CELProgram</key>
+            <string>'-s' in args &amp;&amp;
+              args.exists(arg, arg.contains("com.apple.TimeMachine.")) ? BLOCKLIST : ALLOWLIST
+            </string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.tmutil</string>
+            <key>CELProgram</key>
+            <string>'localsnapshot' in args ? BLOCKLIST : ALLOWLIST</string>
+          </dict>
+          
+          <!-- Note: Blocklists MUST be in StaticRules alongside platform:*
+               because StaticRules take precedence over sync server rules. -->
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>platform:*</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.Dictionary</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.Chess</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.AddressBook</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.FaceTime</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.gamecenter</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.Home</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.journal</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.mail</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.Maps</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.MobileSMS</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.Music</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.Photos</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.podcasts</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.reminders</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.Siri</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.Stickies</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.stocks</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.TV</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.news</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.freeform</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.amsengagementd</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.amp.mediasharingd</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.helpviewer</string>
+          </dict>
+
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST_COMPILER</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.ld</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST_COMPILER</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.lipo</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST_COMPILER</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.security.codesign</string>
+          </dict>
+          
+          <dict>
+            <key>RuleType</key>
+            <string>TEAMID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>UBF8T346G9</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>TEAMID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>EQHXZ8M8AV</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>TEAMID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>9BNSXJN65R</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>TEAMID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>VLUGQBAPZ5</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>TEAMID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>KYL8YCVN64</string>
+          </dict>
+          
+          <dict>
+            <key>RuleType</key>
+            <string>PATH</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>/opt/local/bin</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>PATH</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>/opt/local/sbin</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>PATH</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>/opt/local/libexec</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>PATH</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>/opt/local/lib</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>PATH</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>/opt/local/Library/Frameworks</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>PATH</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>/Users/warren/.cargo/bin</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>PATH</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>/Users/warren/.rustup</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>PATH</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>/Users/warren/.local/bin</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>PATH</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>/Users/warren/go/bin</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>PATH</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>/Users/warren/.npm-global</string>
+          </dict>
+        </array>
+        
         <key>PayloadDisplayName</key>
         <string>Santa</string>
         <key>PayloadIdentifier</key>
