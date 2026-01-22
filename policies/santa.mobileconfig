@@ -19,6 +19,8 @@
       <dict>
         <key>ClientMode</key>
         <integer>2</integer>
+        <key>FailClosed</key>
+        <true />
         <key>EnableBadSignatureProtection</key>
         <true />
         <key>EnablePageZeroProtection</key>
@@ -27,6 +29,7 @@
         <true />
         <key>EnableAllEventUpload</key>
         <true />
+        
         <key>BlockUSBMount</key>
         <false />
         <key>RemountUSBMode</key>
@@ -38,33 +41,35 @@
         </array>
         <key>OnStartUSBOptions</key>
         <string>ForceRemount</string>
+        
         <key>FileAccessPolicyPlist</key>
         <string>/var/db/santa/faa_policy.plist</string>
         <key>FileAccessPolicyUpdateIntervalSec</key>
         <integer>60</integer>
+        
         <key>BannedBlockMessage</key>
-        <string>BLOCKED: This application has been explicitly banned.</string>
+        <string>BLOCKED: This binary is explicitly banned.</string>
         <key>UnknownBlockMessage</key>
-        <string>BLOCKED: Unrecognized binary. Allowlist via santactl if legitimate.</string>
+        <string>BLOCKED: Unrecognized binary. Run 'santactl rule --allow --path /path/to/binary' if legitimate.</string>
         <key>BannedUSBBlockMessage</key>
-        <string>BLOCKED: USB device banned by policy.</string>
+        <string>BLOCKED: USB device banned.</string>
         <key>RemountUSBBlockMessage</key>
         <string>USB remounted read-only with noexec/nosuid/nodev.</string>
         <key>FileAccessBlockMessage</key>
-        <string>BLOCKED: Unauthorized file access attempt logged.</string>
+        <string>BLOCKED: Unauthorized file access attempt.</string>
+        
         <key>EnableNotificationSilences</key>
         <false />
         <key>EnableSilentMode</key>
         <false />
         <key>EnableSilentTTYMode</key>
         <false />
-        <key>FailClosed</key>
-        <true />
+        
         <key>Telemetry</key>
         <array>
           <string>Everything</string>
         </array>
-
+        
         <key>StaticRules</key>
         <array>
           <dict>
@@ -113,31 +118,7 @@
             <key>Policy</key>
             <string>ALLOWLIST</string>
             <key>Identifier</key>
-            <string>/opt/local/lib/node_modules</string>
-          </dict>
-          <dict>
-            <key>RuleType</key>
-            <string>PATH</string>
-            <key>Policy</key>
-            <string>ALLOWLIST</string>
-            <key>Identifier</key>
-            <string>/opt/local/Library/Frameworks/Python.framework</string>
-          </dict>
-          <dict>
-            <key>RuleType</key>
-            <string>PATH</string>
-            <key>Policy</key>
-            <string>ALLOWLIST</string>
-            <key>Identifier</key>
-            <string>/Users/warren/.npm-global</string>
-          </dict>
-          <dict>
-            <key>RuleType</key>
-            <string>PATH</string>
-            <key>Policy</key>
-            <string>ALLOWLIST</string>
-            <key>Identifier</key>
-            <string>/Users/warren/.local/bin</string>
+            <string>/opt/local/Library/Frameworks</string>
           </dict>
           <dict>
             <key>RuleType</key>
@@ -161,7 +142,23 @@
             <key>Policy</key>
             <string>ALLOWLIST</string>
             <key>Identifier</key>
+            <string>/Users/warren/.local/bin</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>PATH</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
             <string>/Users/warren/go/bin</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>PATH</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>/Users/warren/.npm-global</string>
           </dict>
           <dict>
             <key>RuleType</key>
