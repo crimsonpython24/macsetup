@@ -1,20 +1,22 @@
 # macOS Setup
 
-This is a comprehensive macOS security hardening guide. It covers:
+## Elevator Pitch
+**Why this exists:** Most people trust Apple's defaults, but those prioritize convenience over security: processes can persist on startup, DNS queries leak browsing history, system file changes go unaudited, and background services (like iCloud sync) run even when disabled in settings. This setup blocks unauthorized programs and allows manual tracing when processes modify critical directories.
+
+**What it achieves:** The system blocks unauthorized executables, encrypts and validates all DNS traffic, maintains cryptographic checksums of system files, and complies with government security baselines (CNSSI-1253 in particular).
 
 | Component | What It Does | Key Features |
 |-----------|-------------|--------------|
 | **Application allowlisting (Santa)** | Block unauthorized executables | • Signing ID-based blocking<br>• Protect sensitive files (SSH keys, configs) |
 | **NIST compliance (mSCP)** | Apply government-level security standards | • CNSSI-1253 baseline (~96-100% compliance)<br>• Enforce telemetry and firewall rules |
 | **File integrity monitoring (AIDE)** | Detect unauthorized file changes | • Monitor LaunchDaemons/LaunchAgents<br>• Detect PAM modifications |
-| **DNS hardening** | Encrypt and validate DNS queries | • DNSCrypt-proxy for encrypted queries<br>• Unbound for DNSSEC validation + caching<br> |
+| **DNS hardening** | Encrypt and validate DNS queries | • DNSCrypt-proxy for encrypted queries<br>• Unbound for DNSSEC validation + caching |
 | **Application isolation** | Limit app privileges | • Restrict write access to system directories<br>• Prevent persistence in `/Library` paths |
 | **Shell environment** | Secure development tools | • Hardened SSH (modern algorithms, multiplexing)<br>• GPG for commit signing |
 
-Total time needed (from empty system): 90 minutes depending on Internet connection.
+Time investment: ~90 minutes from a fresh install with decent Internet connectivity.
 
-*Note: this is not an optimal, most convenient, or secure configuration. It is simply what works best for me.*
-
+*This is not the most convenient, most resource-optimized, or most secure configuration. It is simply what works best for me.*
 
 ## 0. Basics
 
