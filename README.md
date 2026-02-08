@@ -1,6 +1,20 @@
 # macOS Setup
 
-Total time needed (from empty system): 4:40-, depending on Internet connection.
+This is a comprehensive macOS security hardening guide. It covers:
+
+| Component | What It Does | Key Features |
+|-----------|-------------|--------------|
+| **Application allowlisting (Santa)** | Block unauthorized executables | • Signing ID-based blocking<br>• Protect sensitive files (SSH keys, configs) |
+| **NIST compliance (mSCP)** | Apply government-level security standards | • CNSSI-1253 baseline (~96-100% compliance)<br>• Enforce telemetry and firewall rules |
+| **File integrity monitoring (AIDE)** | Detect unauthorized file changes | • Monitor LaunchDaemons/LaunchAgents<br>• Detect PAM modifications |
+| **DNS hardening** | Encrypt and validate DNS queries | • DNSCrypt-proxy for encrypted queries<br>• Unbound for DNSSEC validation + caching<br> |
+| **Application isolation** | Limit app privileges | • Restrict write access to system directories<br>• Prevent persistence in `/Library` paths |
+| **Shell environment** | Secure development tools | • Hardened SSH (modern algorithms, multiplexing)<br>• GPG for commit signing |
+
+Total time needed (from empty system): 90 minutes depending on Internet connection.
+
+*Note: this is not an optimal, most convenient, or secure configuration. It is simply what works best for me.*
+
 
 ## 0. Basics
 
