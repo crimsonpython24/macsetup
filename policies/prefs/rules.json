@@ -8,49 +8,19 @@
   "rules": [
     { "_section": "Additional team id allowlists" },
     {
-      "_note": "Core vendors (Microsoft, Google, Docker, Little Snitch, WireGuard) are in StaticRules"
+      "_note": "Replace placeholders with real 10-char Apple Developer Team IDs. Find with: codesign -dvvv /Applications/SomeApp.app"
     },
     {
       "policy": "ALLOWLIST",
       "rule_type": "TEAMID",
-      "identifier": "43AQ936H96",
-      "comment": "Mozilla - Firefox, Thunderbird"
+      "identifier": "XXXXXXXXXX",
+      "comment": "TEMPLATE: replace identifier"
     },
     {
       "policy": "ALLOWLIST",
       "rule_type": "TEAMID",
-      "identifier": "BQR82RBBHL",
-      "comment": "Slack Technologies"
-    },
-    {
-      "policy": "ALLOWLIST",
-      "rule_type": "TEAMID",
-      "identifier": "53Q6R32WPB",
-      "comment": "Discord Inc"
-    },
-    {
-      "policy": "ALLOWLIST",
-      "rule_type": "TEAMID",
-      "identifier": "2UYBER83LD",
-      "comment": "Anthropic - Claude"
-    },
-    {
-      "policy": "ALLOWLIST",
-      "rule_type": "TEAMID",
-      "identifier": "QWY4LRW926",
-      "comment": "AgileBits - 1Password"
-    },
-    {
-      "policy": "ALLOWLIST",
-      "rule_type": "TEAMID",
-      "identifier": "N82Y98DJSN",
-      "comment": "Zoom Video Communications"
-    },
-    {
-      "policy": "ALLOWLIST",
-      "rule_type": "TEAMID",
-      "identifier": "P5TKG74YM7",
-      "comment": "JetBrains - IntelliJ, PyCharm, etc"
+      "identifier": "YYYYYYYYYY",
+      "comment": "TEMPLATE: replace identifier"
     },
 
     { "_section": "cdhash version locks" },
