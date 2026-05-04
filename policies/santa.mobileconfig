@@ -17,46 +17,402 @@
     <key>PayloadContent</key>
     <array>
       <dict>
+        <key>ClientMode</key>
+        <integer>1</integer>
+        <!-- FailClosed only takes effect in Lockdown (ClientMode=2); no-op in Monitor mode -->
+        <!-- <key>FailClosed</key>
+        <true /> -->
         <key>EnableBadSignatureProtection</key>
         <true />
         <key>EnablePageZeroProtection</key>
         <true />
         <key>EnableTransitiveRules</key>
         <true />
-        <key>BlockUSBMount</key>
+        <key>EnableAllEventUpload</key>
+        <true />
+        <key>IgnoreOtherEndpointSecurityClients</key>
         <false />
-        <key>RemountUSBMode</key>
+        <key>EnableMenuItem</key>
+        <true />
+        <key>AntiSuspendSigningIDs</key>
+        <array>
+          <string>platform:com.apple.tccd</string>
+          <string>platform:com.apple.securityd</string>
+          <string>platform:com.apple.endpointsecurityd</string>
+          <string>platform:com.apple.opendirectoryd</string>
+          <string>ZMCG7MLDV9:com.northpolesec.santa</string>
+        </array>
+        <key>EntitlementsPrefixFilter</key>
+        <array>
+          <string>com.apple.private</string>
+        </array>
+
+        <key>RemovableMediaAction</key>
+        <string>Remount</string>
+        <key>RemovableMediaRemountFlags</key>
         <array>
           <string>noexec</string>
           <string>nosuid</string>
           <string>nodev</string>
+          <string>rdonly</string>
         </array>
         <key>OnStartUSBOptions</key>
         <string>ForceRemount</string>
+        
         <key>FileAccessPolicyPlist</key>
         <string>/var/db/santa/faa_policy.plist</string>
         <key>FileAccessPolicyUpdateIntervalSec</key>
-        <integer>300</integer>
+        <integer>60</integer>
+        
         <key>BannedBlockMessage</key>
-        <string>This application has been blocked by Santa security policy.</string>
+        <string>BLOCKED: This binary is explicitly banned by security policy.</string>
         <key>UnknownBlockMessage</key>
-        <string>This application is not recognized and has been blocked.</string>
+        <string>BLOCKED: Unrecognized binary. Contact IT if this is legitimate software.</string>
         <key>BannedUSBBlockMessage</key>
-        <string>This USB device has been blocked by security policy.</string>
+        <string>BLOCKED: USB storage devices are restricted.</string>
         <key>RemountUSBBlockMessage</key>
-        <string>This USB device has been remounted with restricted permissions.</string>
+        <string>USB remounted with security restrictions (read-only, no execution).</string>
         <key>FileAccessBlockMessage</key>
-        <string>File access blocked by security policy.</string>
+        <string>BLOCKED: Unauthorized file access attempt detected.</string>
+        
         <key>EnableNotificationSilences</key>
         <false />
         <key>EnableSilentMode</key>
         <false />
         <key>EnableSilentTTYMode</key>
         <false />
+
         <key>Telemetry</key>
         <array>
           <string>Everything</string>
         </array>
+
+        <key>StaticRules</key>
+        <array>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>CEL</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.osascript</string>
+            <key>cel_expr</key>
+            <string>(
+              args.join(" ").lowerAscii().matches(".*\\W+with\\W+hidden\\W+answer.*") ||
+              args.join(" ").lowerAscii().contains("password")
+            ) &amp;&amp;
+              args.join(" ").lowerAscii().matches(".*\\W+display\\W+dialog.*") ? BLOCKLIST : ALLOWLIST
+            </string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>CEL</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.spctl</string>
+            <key>cel_expr</key>
+            <string>[
+              '--global-disable',
+              '--master-disable',
+              '--disable',
+              '--add',
+              '--remove'
+            ].exists(flag, flag in args) ? BLOCKLIST : ALLOWLIST
+            </string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>CEL</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.touch</string>
+            <key>cel_expr</key>
+            <string>args.exists(arg, arg in ['-a', '-m', '-r', '-A', '-t']) &amp;&amp;
+              args.join(" ").contains("Library/Launch") ? BLOCKLIST : ALLOWLIST
+            </string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>CEL</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.systemsetup</string>
+            <key>cel_expr</key>
+            <string>args.join(" ").contains("-setremotelogin on") ||
+              args.join(" ").contains("-setremoteappleevents on") ? BLOCKLIST : ALLOWLIST
+            </string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>CEL</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.mount_apfs</string>
+            <key>cel_expr</key>
+            <string>'-s' in args &amp;&amp;
+              args.exists(arg, arg.contains("com.apple.TimeMachine.")) ? BLOCKLIST : ALLOWLIST
+            </string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>CEL</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.tmutil</string>
+            <key>cel_expr</key>
+            <string>'localsnapshot' in args ? BLOCKLIST : ALLOWLIST</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>CEL</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.csrutil</string>
+            <key>cel_expr</key>
+            <string>args.exists(arg, arg in ['disable','enable','clear','authenticated-root','netboot']) ? BLOCKLIST : ALLOWLIST</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>CEL</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.nvram</string>
+            <key>cel_expr</key>
+            <string>args.exists(arg, arg.contains("=")) || ('-d' in args) || ('-c' in args) ? BLOCKLIST : ALLOWLIST</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>CEL</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.bless</string>
+            <key>cel_expr</key>
+            <string>args.exists(arg, arg in ['--setBoot','--bootefi','--folder','--device']) ? BLOCKLIST : ALLOWLIST</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>CEL</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.fdesetup</string>
+            <key>cel_expr</key>
+            <string>args.exists(arg, arg in ['disable','remove','changerecovery']) ? BLOCKLIST : ALLOWLIST</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>CEL</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.tccutil</string>
+            <key>cel_expr</key>
+            <string>'reset' in args ? BLOCKLIST : ALLOWLIST</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>CEL</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.profiles</string>
+            <key>cel_expr</key>
+            <string>args.exists(arg, arg in ['-I','-R','-D','install','remove']) ? BLOCKLIST : ALLOWLIST</string>
+          </dict>
+
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.Dictionary</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.Chess</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.AddressBook</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.FaceTime</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.Home</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.mail</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.Maps</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.MobileSMS</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.Music</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.Photos</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.Stickies</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.TV</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.freeform</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.shortcuts</string>
+          </dict>
+          <!-- iWork apps are typically Mac App Store distributed; signing ID likely uses
+               Apple's distribution Team ID rather than `platform:`. Verify with:
+               santactl fileinfo /Applications/Numbers.app -->
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.iWork.Numbers</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.iWork.Pages</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.iWork.Keynote</string>
+          </dict>
+
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST_COMPILER</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.ld</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST_COMPILER</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.lipo</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST_COMPILER</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.security.codesign</string>
+          </dict>
+          
+          <!-- TEAMID placeholders: replace with real 10-char Apple Developer Team IDs.
+               Find with: codesign -dvvv /Applications/SomeApp.app 2>&1 | grep TeamIdentifier -->
+          <dict>
+            <key>RuleType</key>
+            <string>TEAMID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>XXXXXXXXXX</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>TEAMID</string>
+            <key>Policy</key>
+            <string>ALLOWLIST</string>
+            <key>Identifier</key>
+            <string>YYYYYYYYYY</string>
+          </dict>
+        </array>
+        
         <key>PayloadDisplayName</key>
         <string>Santa</string>
         <key>PayloadIdentifier</key>
