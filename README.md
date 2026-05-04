@@ -148,6 +148,20 @@ cat ~/.ssh/github_ed25519
 sudo santactl rule --export santa1.json
 ```
 
+12. To temporarily unblock an FAA rule (e.g., rotating SSH keys with a non-allowlisted editor), edit `/var/db/santa/faa_policy.plist` and either delete the rule's `<key>RuleName</key><dict>...</dict>` block, or flip its `AuditOnly` option to `<true />` so accesses are logged but not blocked. Santa reloads the policy every 60s (`FileAccessPolicyUpdateIntervalSec` in `santa.mobileconfig`) — no daemon restart needed. To force an immediate reload:
+
+```zsh
+sudo launchctl kickstart -k system/com.northpolesec.santa.daemon
+```
+
+To watch FAA decisions in the unified log while testing (helps confirm the rule is now audit-only or absent):
+
+```zsh
+log stream --predicate 'subsystem == "com.northpolesec.santa"' --info | grep -i "file_access\|FAA"
+```
+
+Restore the original block when done. Never edit the policy directly while a sensitive operation is mid-flight — wait the 60s for reload, verify, then proceed.
+
 ## 3. mSCP Setup
 
 > [!IMPORTANT]
