@@ -161,11 +161,69 @@ else
     check_fail "PasswordAuthentication is not disabled"
 end
 
+# KbdInteractiveAuthentication
+if ssh -G github.com | grep -q "kbdinteractiveauthentication no"
+    check_pass "KbdInteractiveAuthentication is disabled"
+else
+    check_warn "KbdInteractiveAuthentication is not disabled"
+end
+
+# GSSAPIAuthentication
+if ssh -G github.com | grep -q "gssapiauthentication no"
+    check_pass "GSSAPIAuthentication is disabled"
+else
+    check_warn "GSSAPIAuthentication is not disabled"
+end
+
+# HostbasedAuthentication
+if ssh -G github.com | grep -q "hostbasedauthentication no"
+    check_pass "HostbasedAuthentication is disabled"
+else
+    check_warn "HostbasedAuthentication is not disabled"
+end
+
 # ForwardAgent
 if ssh -G github.com | grep -q "forwardagent no"
     check_pass "ForwardAgent is disabled (secure default)"
 else
     check_warn "ForwardAgent is enabled (security risk)"
+end
+
+# ForwardX11
+if ssh -G github.com | grep -q "forwardx11 no"
+    check_pass "ForwardX11 is disabled"
+else
+    check_warn "ForwardX11 is enabled (security risk)"
+end
+
+# PermitLocalCommand
+if ssh -G github.com | grep -q "permitlocalcommand no"
+    check_pass "PermitLocalCommand is disabled"
+else
+    check_warn "PermitLocalCommand is enabled"
+end
+
+# StrictHostKeyChecking
+set strict_value (ssh -G github.com | grep "^stricthostkeychecking" | awk '{print $2}')
+if contains -- "$strict_value" ask yes accept-new
+    check_pass "StrictHostKeyChecking is $strict_value (safe)"
+else
+    check_fail "StrictHostKeyChecking is $strict_value (unsafe — silent acceptance)"
+end
+
+# HashKnownHosts
+if ssh -G github.com | grep -q "hashknownhosts yes"
+    check_pass "HashKnownHosts is enabled"
+else
+    check_warn "HashKnownHosts is disabled (host names visible if file is leaked)"
+end
+
+# RequiredRSASize
+set rsa_size (ssh -G github.com | grep "^requiredrsasize" | awk '{print $2}')
+if test -n "$rsa_size"; and string match -qr '^[0-9]+$' -- "$rsa_size"; and test "$rsa_size" -ge 3072
+    check_pass "RequiredRSASize is $rsa_size bits"
+else
+    check_warn "RequiredRSASize is below 3072 bits or unset ($rsa_size)"
 end
 
 # RekeyLimit
@@ -185,9 +243,33 @@ ssh -G github.com | grep "^ciphers" | sed 's/ciphers /  /'
 echo ""
 echo "MACs:"
 ssh -G github.com | grep "^macs" | sed 's/macs /  /'
+echo ""
+echo "HostKey signature algorithms:"
+ssh -G github.com | grep "^hostkeyalgorithms" | sed 's/hostkeyalgorithms /  /'
+echo ""
+echo "Pubkey signature algorithms:"
+ssh -G github.com | grep "^pubkeyacceptedalgorithms" | sed 's/pubkeyacceptedalgorithms /  /'
+
+# Spot-check post-quantum KEX (added to OpenSSH 9.0+, default in 10.0+)
+if ssh -G github.com | grep "^kexalgorithms" | grep -qE "(mlkem768x25519|sntrup761x25519)"
+    check_pass "Post-quantum KEX algorithm is offered"
+else
+    check_warn "No post-quantum KEX algorithm in offer list (upgrade OpenSSH to 9.0+)"
+end
+
+# Spot-check that no AEAD-incompatible weak ciphers slipped in
+if ssh -G github.com | grep "^ciphers" | grep -qE "(3des|cbc|arcfour|blowfish)"
+    check_fail "Weak cipher present in offer list"
+else
+    check_pass "No legacy/weak ciphers in offer list"
+end
+
+# OpenSSH version (informational)
+print_header "8. OpenSSH Version"
+ssh -V
 
 # Check 10: GitHub connection test
-print_header "8. GitHub Connection Test"
+print_header "9. GitHub Connection Test"
 echo "Testing SSH connection to GitHub..."
 if ssh -T git@github.com 2>&1 | grep -q "successfully authenticated"
     check_pass "Successfully authenticated to GitHub"
@@ -200,7 +282,9 @@ print_header "Verification Complete"
 echo "Review any warnings or failures above."
 echo ""
 echo "Next steps if needed:"
-echo "  - Generate keys: ssh-keygen -t ed25519 -a 100 -f ~/.ssh/github_ed25519"
+echo "  - Generate software key: ssh-keygen -t ed25519 -a 100 -f ~/.ssh/github_ed25519"
+echo "  - Generate FIDO2/YubiKey-bound key (recommended):"
+echo "      ssh-keygen -t ed25519-sk -O resident -O verify-required -O application=ssh:github -a 100 -f ~/.ssh/github_ed25519_sk"
 echo "  - Add to agent: ssh-add --apple-use-keychain ~/.ssh/github_ed25519"
 echo "  - Copy public key: cat ~/.ssh/github_ed25519.pub | pbcopy"
 echo "  - Add to GitHub: https://github.com/settings/keys"

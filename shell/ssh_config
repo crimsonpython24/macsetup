@@ -1,26 +1,90 @@
+# ─── ~/.ssh/config ────────────────────────────────────────────────────────────
+# Hardened OpenSSH client configuration.
+# Targets OpenSSH 10.0+ (ships in MacPorts/Homebrew); some directives are
+# silently ignored on older releases.
+#
+# Match canonical applies AFTER CanonicalizeHostname rewrites the target,
+# so the catch-all Host * block carries the bulk of the hardening — the
+# per-host blocks above it only override what github (or any other peer)
+# actually supports.
+# ──────────────────────────────────────────────────────────────────────────────
+
+# IgnoreUnknown must precede the first option it has to suppress. It lets
+# Apple-specific keys (UseKeychain, ApplePersistentConnection) and options
+# added in recent upstream OpenSSH (WarnWeakCrypto in 10.1) silently no-op
+# when this file is parsed by an older build that doesn't recognize them.
+IgnoreUnknown UseKeychain,ApplePersistentConnection,WarnWeakCrypto
+
 Host github.com
-  CheckHostIP no
-  VerifyHostKeyDNS no
-  CanonicalizeHostname no
   User git
   HostName github.com
   IdentityFile ~/.ssh/github_ed25519
   IdentitiesOnly yes
-  ControlMaster no
+
+  # github.com publishes ed25519 + ecdsa-nistp256 + rsa host keys. Restrict
+  # to the two non-RSA options — both are fixed-size, modern, and immune to
+  # the "RSA host keys < 4096 bits" RequiredRSASize fallout below.
   HostKeyAlgorithms ssh-ed25519,ecdsa-sha2-nistp256
+  CASignatureAlgorithms ssh-ed25519
+  PubkeyAcceptedAlgorithms ssh-ed25519,sk-ssh-ed25519@openssh.com
+
+  # github.com added sntrup761x25519-sha512 on 2025-09-17. mlkem768x25519-sha256
+  # is not yet announced as supported, so list sntrup first for this host.
+  KexAlgorithms sntrup761x25519-sha512@openssh.com,sntrup761x25519-sha512,curve25519-sha256,curve25519-sha256@libssh.org
   MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com
 
+  # github only does pubkey; never let ssh fall back to anything interactive.
+  PreferredAuthentications publickey
+  BatchMode yes
+
+  # Multiplexing to github.com causes "shell request failed" noise on the
+  # second `ssh -T` and breaks `gh` in some cases. Keep it off here.
+  ControlMaster no
+
+  # github fronts a load balancer; the IP changes constantly and SSHFP
+  # records aren't published, so per-IP and DNS-based checks add nothing.
+  CheckHostIP no
+  VerifyHostKeyDNS no
+  CanonicalizeHostname no
+
 Host *
+  # ─── macOS keychain / agent ────────────────────────────────────────────────
   AddKeysToAgent confirm
   UseKeychain yes
+  IdentityAgent ${SSH_AUTH_SOCK}
+
+  # ─── Network ───────────────────────────────────────────────────────────────
   AddressFamily inet
-  KexAlgorithms sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org
+
+  # ─── Algorithms ────────────────────────────────────────────────────────────
+  # KEX: post-quantum hybrids first. mlkem768x25519-sha256 (NIST FIPS-203,
+  # default since OpenSSH 10.0) ahead of sntrup761x25519-sha512 (the
+  # OpenSSH-extension PQ KEX, what github speaks today). Classical X25519
+  # remains as the fallback for peers that support neither hybrid.
+  KexAlgorithms mlkem768x25519-sha256,sntrup761x25519-sha512@openssh.com,sntrup761x25519-sha512,curve25519-sha256,curve25519-sha256@libssh.org
+
+  # Ciphers: AEAD only. ChaCha20-Poly1305 first (constant-time on hosts
+  # without AES-NI), AES-256-GCM second.
   Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com
+
+  # MACs: only consulted when the negotiated cipher is non-AEAD (i.e. never,
+  # given the Ciphers list above). Listed defensively for downgrade fallback;
+  # ETM (encrypt-then-MAC) variants only.
   MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com
+
+  # Host key, pubkey, CA-signature: ed25519 (incl. FIDO2 sk-* hardware-backed
+  # variants) preferred, then OpenSSH certificates, then RSA-with-SHA-512 as
+  # a last resort. SHA-1 RSA (ssh-rsa) and ECDSA are deliberately omitted.
   HostKeyAlgorithms sk-ssh-ed25519-cert-v01@openssh.com,ssh-ed25519-cert-v01@openssh.com,sk-ssh-ed25519@openssh.com,ssh-ed25519,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-512
   PubkeyAcceptedAlgorithms sk-ssh-ed25519-cert-v01@openssh.com,ssh-ed25519-cert-v01@openssh.com,sk-ssh-ed25519@openssh.com,ssh-ed25519,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-512
   CASignatureAlgorithms sk-ssh-ed25519@openssh.com,ssh-ed25519,rsa-sha2-512
 
+  # ─── Authentication ────────────────────────────────────────────────────────
+  # OpenSSH 9.5+ negotiates the host-bound variant of pubkey auth by default
+  # when the server supports it, which signs the destination hostkey into
+  # the auth signature so a hostile relay holding a forwarded agent can't
+  # replay it elsewhere. "yes" inherits that default; setting "host-bound"
+  # explicitly would force the new value and crash older clients.
   PubkeyAuthentication yes
   PasswordAuthentication no
   KbdInteractiveAuthentication no
@@ -32,27 +96,47 @@ Host *
   IdentitiesOnly yes
   NumberOfPasswordPrompts 0
 
+  # Disallow the ssh-keysign helper used by hostbased auth. Belt-and-braces
+  # given HostbasedAuthentication is already off.
+  EnableSSHKeysign no
+
+  # ─── Forwarding (all off, fail loudly if asked for it) ─────────────────────
   ForwardAgent no
   ForwardX11 no
   ForwardX11Trusted no
+  ForwardX11Timeout 0
   PermitLocalCommand no
   Tunnel no
   PermitRemoteOpen none
+  ClearAllForwardings yes
+  GatewayPorts no
+  ExitOnForwardFailure yes
 
+  # ─── Host key verification ─────────────────────────────────────────────────
   StrictHostKeyChecking ask
+  # VerifyHostKeyDNS yes requires OpenSSH ≥ 9.9p2 (CVE-2025-26465 patched).
+  # MacPorts/Homebrew openssh is well past that; Apple's bundled ssh is not.
+  # If you can't confirm the patched build, set this to "no".
   VerifyHostKeyDNS yes
   CheckHostIP yes
   FingerprintHash sha256
   UpdateHostKeys yes
-
   HashKnownHosts yes
   VisualHostKey yes
+
+  # ─── Interactive hardening ─────────────────────────────────────────────────
+  # ObscureKeystrokeTiming defaults to interval:20 since 9.5. Loosen to 80ms
+  # to lower the chaff bandwidth on slow links; still well above the keystroke
+  # cadence an observer would want to fingerprint.
   ObscureKeystrokeTiming interval:80
   EscapeChar none
   EnableEscapeCommandline no
   CanonicalizeHostname yes
   CanonicalizeFallbackLocal yes
+  # WarnWeakCrypto added in OpenSSH 10.1 (silently ignored before then).
+  WarnWeakCrypto yes
 
+  # ─── Connection lifecycle ──────────────────────────────────────────────────
   TCPKeepAlive no
   ServerAliveInterval 60
   ServerAliveCountMax 3
@@ -63,9 +147,12 @@ Host *
   ChannelTimeout global=1800
   RekeyLimit 1G 1h
 
+  # ─── Misc ──────────────────────────────────────────────────────────────────
+  # Compression off — CRIME-class side-channels are not a credible threat
+  # over SSH, but the bandwidth savings aren't worth the extra moving part.
   Compression no
   IPQoS af21 cs1
-  ExitOnForwardFailure yes
+  StreamLocalBindMask 0177
   StreamLocalBindUnlink yes
   ProxyUseFdpass no
   RequiredRSASize 4096

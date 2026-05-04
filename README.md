@@ -916,10 +916,26 @@ mkdir -p ~/.ssh/sockets
 chmod 700 ~/.ssh/sockets
 ```
 
-3.  Generate ED25519 key for GitHub:
+3.  Generate an authentication key. Pick **one** of these — option B is the
+    higher-assurance path, since the private key is non-extractable from the
+    YubiKey/FIDO2 device and every signature requires a physical touch (and
+    a PIN, with `verify-required`):
 
 ```fish
-ssh-keygen -t ed25519 -a 100 -f ~/.ssh/github_ed25519 -C "github-$(hostname)-$(date +%Y)"
+# Option A — software Ed25519 key (KDF rounds bumped from default 16 to 100).
+ssh-keygen -t ed25519 -a 100 -f ~/.ssh/github_ed25519 \
+  -C "github-$(hostname)-$(date +%Y)"
+
+# Option B — FIDO2 hardware-backed key (requires a YubiKey 5 or similar).
+# resident         = key handle stored on the token, so a fresh laptop only
+#                    needs `ssh-keygen -K` to recover the stub.
+# verify-required  = PIN required for every signature (not just touch).
+# application=ssh:github = isolates this credential per-service inside the
+#                    authenticator so it can't be reused for another site.
+ssh-keygen -t ed25519-sk -a 100 \
+  -O resident -O verify-required -O application=ssh:github \
+  -f ~/.ssh/github_ed25519_sk \
+  -C "github-sk-$(hostname)-$(date +%Y)"
 ```
 
 4.  Set permissions:
@@ -927,23 +943,31 @@ ssh-keygen -t ed25519 -a 100 -f ~/.ssh/github_ed25519 -C "github-$(hostname)-$(d
 ```fish
 chmod 700 ~/.ssh
 chmod 600 ~/.ssh/config
-chmod 600 ~/.ssh/*_ed25519
-chmod 644 ~/.ssh/*_ed25519.pub
+chmod 600 ~/.ssh/*_ed25519 ~/.ssh/*_ed25519_sk 2>/dev/null
+chmod 644 ~/.ssh/*_ed25519.pub ~/.ssh/*_ed25519_sk.pub 2>/dev/null
 ```
 
-5.  Add keys to macOS keychain:
+5.  Add keys to the macOS keychain. Hardware-backed (`*_sk`) keys do not
+    cache a passphrase — each use prompts the token directly — so only the
+    software key path actually needs `--apple-use-keychain`:
 
 ```fish
 ssh-add --apple-use-keychain ~/.ssh/github_ed25519
 ssh-add -l
 ```
 
-6.  Add SSH key to GitHub:
+6.  Add the SSH key to GitHub:
 
 ```fish
 cat ~/.ssh/github_ed25519.pub | pbcopy
-# Add to https://github.com/settings/keys as an authentication key, remove trailing new line
+# or, for the FIDO2 path:
+# cat ~/.ssh/github_ed25519_sk.pub | pbcopy
+# Add to https://github.com/settings/keys as an authentication key, remove trailing new line.
 ```
+
+   If you used the FIDO2 (`-sk`) key, you must also add the
+   `IdentityFile ~/.ssh/github_ed25519_sk` line to the `Host github.com`
+   block in `~/.ssh/config` (or replace the existing IdentityFile pointer).
 
 7.  Test SSH connection:
 
@@ -951,6 +975,15 @@ cat ~/.ssh/github_ed25519.pub | pbcopy
 ssh -T git@github.com
 cat ~/.ssh/known_hosts
 # |1|qN7XE853AcGGBmJDT/APv+AiZGU=|qq21+AC5OMD...    <-- should be hashed
+```
+
+   Confirm the negotiated KEX is post-quantum (one of `mlkem768x25519-sha256`
+   or `sntrup761x25519-sha512@openssh.com`). GitHub announced support for
+   `sntrup761x25519-sha512@openssh.com` on 2025-09-17, so any OpenSSH ≥ 9.0
+   client should now negotiate it automatically:
+
+```fish
+ssh -v git@github.com exit 2>&1 | grep 'kex: algorithm:'
 ```
 
 8.  Run the [test script](https://github.com/crimsonpython24/macsetup/blob/master/shell/ssh_test.sh) to verify that SSH settings are applied.
@@ -964,68 +997,153 @@ chmod +x ssh_test.sh
 rm ssh_test.sh
 ```
 
-**Note** If legacy SSH servers are not working, use the following configuration:
+**Note** If a legacy SSH server is not working, add a per-host override
+**below** the `Host *` block (Match/Host blocks are evaluated top-to-bottom
+and the **first** match for any given keyword wins, so the override has to
+come first in the file). Prefer the `+` syntax to extend the hardened
+defaults rather than replace them:
 
 ```fish
 Host legacy-server
   HostName old.server.com
-  # Allow older key exchange for this specific server
-  KexAlgorithms +diffie-hellman-group14-sha256,diffie-hellman-group14-sha1
-  # Allow older ciphers
-  Ciphers +aes128-cbc,aes256-cbc
-  # Allow older MACs
-  MACs +hmac-sha2-256,hmac-sha1
-  # Allow older host key types
+  # Re-enable legacy KEX/cipher/MAC for THIS host only.
+  KexAlgorithms +diffie-hellman-group14-sha256
+  Ciphers +aes256-cbc
+  MACs +hmac-sha2-256
   HostKeyAlgorithms +ssh-rsa
   PubkeyAcceptedAlgorithms +ssh-rsa
 ```
 
+**Note** `VerifyHostKeyDNS yes` in the hardened `~/.ssh/config` requires
+OpenSSH ≥ 9.9p2 (the patched build for CVE-2025-26465, where the prior
+client logic accepted server impersonation under DNS misuse). MacPorts and
+Homebrew are well past that release. Apple's bundled `ssh` typically lags
+upstream — confirm `ssh -V` is ≥ 9.9p2 before relying on this directive,
+and flip it to `no` if you see a version mismatch.
+
 ### B) GPG Configuration
 
-1.  Make sure GnuPG is installed: `sudo port install gnupg2`.
-2.  Create configuration directory and edit [GPG configuration](https://github.com/crimsonpython24/macsetup/blob/master/shell/gpg.conf).
+The hardened setup ships three configuration files: `gpg.conf` (gpg behavior),
+`gpg-agent.conf` (passphrase cache + pinentry), and `dirmngr.conf` (keyserver
+network policy). All three live in `~/.gnupg`.
+
+1.  Make sure GnuPG and a graphical pinentry are installed: `sudo port install gnupg2 pinentry-mac`.
+2.  Create the configuration directory and drop in all three files. The agent
+    and dirmngr daemons read their configs only at startup, so reload them
+    after writing:
 
 ```fish
 exit    # or su - warren
 mkdir -p ~/.gnupg
 chmod 700 ~/.gnupg
+
 vi ~/.gnupg/gpg.conf
-# Paste content
+# Paste content from shell/gpg.conf
+
+vi ~/.gnupg/gpg-agent.conf
+# Paste content from shell/gpg-agent.conf
+# If you installed pinentry-mac via Homebrew rather than MacPorts, change
+# pinentry-program to /opt/homebrew/bin/pinentry-mac.
+
+vi ~/.gnupg/dirmngr.conf
+# Paste content from shell/dirmngr.conf
+
+chmod 600 ~/.gnupg/gpg.conf ~/.gnupg/gpg-agent.conf ~/.gnupg/dirmngr.conf
+
+gpg-connect-agent reloadagent /bye
+gpg-connect-agent --dirmngr reloaddirmngr /bye
 ```
 
-3.  Give permissions and check for syntax errors:
+3.  Validate syntax — both commands should print nothing:
 
 ```fish
-chmod 600 ~/.gnupg/gpg.conf
 gpg2 --gpgconf-test
-# Should be empty
+gpg2 --gpgconf-list-components
 ```
 
-4.  Generate key (RSA and RSA):
+4.  Generate a key. The hardened `gpg.conf` sets
+    `default-new-key-algo "ed25519/cert,sign+cv25519/encr"`, so
+    `--quick-generate-key` produces a modern Ed25519 cert+sign primary with a
+    Curve25519 encryption subkey. Choose **one** of:
 
 ```fish
-gpg2 --full-generate-key
+# Option A — modern (ed25519/cv25519, recommended for new keys)
+gpg2 --quick-generate-key "Yu-Jen Warren Wang <you@example.com>" default default 2y
+
+# Option B — RSA-4096 (use only if you need to sign for a system that
+# does not yet accept Ed25519 — most don't have that limitation in 2026)
+gpg2 --full-generate-key   # pick "RSA and RSA", 4096 bits
 ```
 
-5.  List keys.
+5.  List the new key, capture the long key ID, and export the public half.
+    `0xD67D...` in `gpg.conf` (`default-key`, `trusted-key`) is the previous
+    holder's key — replace it with whatever your new key reports:
 
 ```fish
 gpg2 --list-secret-keys --keyid-format=long
-# sec   rsa4096/ABC123DEF456 2026-01-11 [SC]
-gpg2 --armor --export ABC123DEF456
+# sec   ed25519/ABC123DEF4567890 2026-05-03 [SC] [expires: 2028-05-03]
+gpg2 --armor --export ABC123DEF4567890
+
+# Open ~/.gnupg/gpg.conf and update default-key / trusted-key. Upstream
+# recommends the full 40-char fingerprint with a trailing "!" to disable
+# subkey substitution heuristics, e.g.:
+#   default-key  ABCDEF0123456789ABCDEF0123456789ABCDEF01!
+gpg2 --list-keys --fingerprint --keyid-format=long
 ```
 
-6.  Add the key to [GitHub](https://github.com/settings/keys).
-7.  Find the private enail address at "Settings" > "Access" > "Emails" > "Keep my email address private" and use that instead of the actual mailbox. Copy it to clipboard.
-8.  Configure Git to use the signing key:
+6.  Generate and store an offline revocation certificate. If your key is ever
+    compromised, this is what you publish to invalidate it:
 
 ```fish
-git config --global user.signingkey ABC123DEF456
+gpg2 --output ~/Documents/revoke-ABC123DEF4567890.asc --gen-revoke ABC123DEF4567890
+chmod 400 ~/Documents/revoke-ABC123DEF4567890.asc
+# Move the file to offline storage (USB stick in a safe, encrypted vault, etc).
+```
+
+7.  Add the public key to [GitHub](https://github.com/settings/keys) as a
+    Signing Key. GitHub accepts Ed25519, ECDSA, RSA, and DSA OpenPGP keys for
+    commit signing, but RSA must be ≥ 2048 bits and DSA is being phased out.
+8.  Find the privacy-preserving email under
+    **Settings → Access → Emails → "Keep my email address private"** and copy
+    that `<id>+<user>@users.noreply.github.com` address.
+9.  Configure Git to sign with the new key:
+
+```fish
+git config --global user.signingkey ABC123DEF4567890
 git config --global commit.gpgsign true
+git config --global tag.gpgsign true
 git config --global gpg.program gpg2
 git config --global user.name "Yu-Jen Warren Wang"
-git config --global user.email "private-email@goes.here"
+git config --global user.email "<id>+<user>@users.noreply.github.com"
 ```
+
+10. Verify by signing a throwaway commit and asking gpg to verify it:
+
+```fish
+echo test > /tmp/sigtest && cd /tmp && git init -q && git add sigtest \
+    && git -c commit.gpgsign=true commit -m "sig test" -q \
+    && git log --show-signature -1 \
+    && cd - >/dev/null && rm -rf /tmp/.git /tmp/sigtest
+# Expect: "Good signature from <you>" and the long key ID matching above.
+```
+
+**Note** The hardened `gpg-agent.conf` enforces 12-character minimum
+passphrases with at least 2 non-alphabetic characters, caches OpenPGP
+passphrases for 10 min (1 h max) and SSH passphrases for 30 min (2 h max),
+and refuses external credential caches, loopback pinentry, and runtime
+trust elevation. To require a pinentry prompt on every signature (paranoid
+mode), uncomment `ignore-cache-for-signing` in `gpg-agent.conf`.
+
+**Note** `gpg.conf` enables `include-key-block` and `auto-key-import` so
+signatures we emit carry a stripped-down copy of our public key, and
+inbound signatures we verify auto-import the signer's key (cleaned to
+self-sigs only by `import-options import-clean import-minimal`). The net
+effect: signed git commits and signed mail can be verified offline by a
+reviewer who hasn't pre-fetched our key, without growing either side's
+keyring. Signature size grows by ~1–2 KB per signed object, which matters
+for nothing in the git workflow. To opt out (e.g. for size-sensitive
+detached signatures on releases), pass `--no-include-key-block` on the
+specific gpg invocation.
 
 ## Footnotes
 
