@@ -107,7 +107,7 @@ sudo launchctl kickstart -k system/com.northpolesec.santa.daemon
 sudo santactl status | grep "Policy Version\|Last Policy Update"
 ```
 
-9.  Blocking application example (a selected list of banned apps are [in the repo](https://github.com/crimsonpython24/macsetup/blob/master/policies/prefs/santa_base.json)):
+9.  Blocking application example (a selected list of banned apps are [in the repo](https://github.com/crimsonpython24/macsetup/blob/master/policies/prefs/rules.json)):
 
 ```zsh
 santactl fileinfo /System/Applications/Dictionary.app
@@ -224,16 +224,6 @@ sudo fdesetup list
 ```zsh
 cd ~/Desktop/Profiles/macos_security-tahoe
 
-cat > custom/rules/pwpolicy_minimum_length_enforce.yaml << 'EOF'
-odv:
-  custom: 12
-EOF
-
-cat > custom/rules/pwpolicy_account_lockout_enforce.yaml << 'EOF'
-odv:
-  custom: 5
-EOF
-
 cat > custom/rules/system_settings_screensaver_ask_for_password_delay_enforce.yaml << 'EOF'
 odv:
   custom: 0
@@ -314,15 +304,38 @@ sudo zsh ~/Desktop/Profiles/macos_security-tahoe/build/cnssi-1253_cust/cnssi-125
 
 ## 4. AIDE Setup
 
+> The database itself is the soft target — if an attacker can rewrite `aide.db`, the next scan compares the filesystem against their forgery and reports clean. We address this two ways: (1) GPG-sign the database after every init/update so tampering is detectable, (2) `chflags uchg` the database + signature so casual writes (`rm`, `mv`, `tee`) fail without an explicit unlock first.
+
+> **Run every command in this section as `admin` (in admin's GUI Terminal, same as the rest of section 1–4).** The signing key lives in `~admin/.gnupg/`, so `gpg2` invocations only resolve to that key when admin is the shell user. Running these commands as warren would fall back to warren's keyring, which doesn't have the AIDE key — sign and verify both fail.
+>
+> CNSSI's `os_root_disable` only disables interactive root login (`su -`, login screen, `ssh root@…`). `sudo` keeps working — it authenticates against admin's password and executes individual commands as root. Every `sudo`-prefixed command below works the same with root disabled.
+
 1.  Install AIDE via MacPorts: `sudo port install aide`.
-2.  Edit the [configuration file](https://github.com/crimsonpython24/macsetup/blob/master/policies/aide.conf):
+2.  Generate a dedicated AIDE-signing GPG key in admin's keyring (one-time). This is separate from warren's git-signing key in section 7(B):
+
+```zsh
+gpg2 --full-generate-key
+# Choose: (1) RSA and RSA, 4096 bits, key does not expire
+# Real name: Admin AIDE Signing
+# Email: aide@<hostname>   (placeholder is fine; not used for mail)
+# Set a strong passphrase
+
+gpg2 --list-secret-keys --keyid-format=long
+# sec   rsa4096/<KEYID> ...
+#       <FINGERPRINT>
+#       Admin AIDE Signing <aide@...>
+```
+
+3.  Edit the [configuration file](https://github.com/crimsonpython24/macsetup/blob/master/policies/aide.conf):
 
 ```zsh
 sudo vi /opt/local/etc/aide/aide.conf
 # Paste content
 ```
 
-3.  Initialize database:
+> **Optional flag-tracking test.** If you want AIDE to log `chflags` changes as "flags changed" instead of just "ctime changed", append `+flags` to the `Full` group definition and re-init. If the build supports it, `--init` succeeds; if not, you'll see a config error and should revert. ctime already catches chflags activity either way, so this is cosmetic.
+
+4.  Initialize database:
 
 ```zsh
 sudo aide --init -L info
@@ -336,26 +349,43 @@ sudo aide --init -L info
 # INFO: exit AIDE with exit code '0'    <--- 0 = no error
 ```
 
-4.  Move database into history directory & verify database:
+5.  Move, sign, and lock the database:
 
 ```zsh
 sudo mv /opt/local/var/lib/aide/aide.db.new /opt/local/var/lib/aide/aide.db
 
-ls -lh /opt/local/var/lib/aide/aide.db
-# Expected: ~1.5MB
+# Detach-sign with admin's AIDE key. sudo cat reads the root-owned db,
+# gpg2 runs as admin so it uses admin's keyring.
+sudo cat /opt/local/var/lib/aide/aide.db | \
+    gpg2 --detach-sign --armor | \
+    sudo tee /opt/local/var/lib/aide/aide.db.sig > /dev/null
+sudo chown root:admin /opt/local/var/lib/aide/aide.db.sig
+sudo chmod 644 /opt/local/var/lib/aide/aide.db.sig
+
+# Lock both files (uchg = user immutable; only root can clear it)
+sudo chflags uchg /opt/local/var/lib/aide/aide.db
+sudo chflags uchg /opt/local/var/lib/aide/aide.db.sig
+
+ls -lO /opt/local/var/lib/aide/aide.db /opt/local/var/lib/aide/aide.db.sig
+# -rw-------  1 root  admin  uchg ... aide.db
+# -rw-r--r--  1 root  admin  uchg ... aide.db.sig
 ```
 
-5.  Test installation:
+6.  Test installation — verify the signature first, then check:
 
 ```zsh
+# Verify GPG signature. "Good signature" = db hasn't been tampered.
+sudo cat /opt/local/var/lib/aide/aide.db | \
+    gpg2 --verify /opt/local/var/lib/aide/aide.db.sig -
+# gpg: Good signature from "Admin AIDE Signing <...>" [ultimate]
+
 sudo aide --check
 # AIDE found NO differences between database and filesystem. Looks okay!!
-# Number of entries:	~9000
-...
-# End timestamp: ... (run time 0m 0-5s)
 ```
 
-6.  Test modifying watched directories:
+> **If the verify fails** (BAD signature, missing signature, or no public key): treat as a tamper event. Don't trust the next `--check` output; investigate before re-init.
+
+7.  Test modifying watched directories:
 
 ```zsh
 sudo touch /Library/LaunchAgents/com.test.aide.plist
@@ -363,47 +393,61 @@ sudo touch /Library/LaunchAgents/com.test.aide.plist
 sudo aide --check
 # AIDE found differences between database and filesystem!!
 # Summary:
-#   Total number of entries:	...
 #   Added entries:		1
-#   Removed entries:		0
-#   Changed entries:		1
-
-# ---------------------------------------------------
-# Added entries:
-# ---------------------------------------------------
-
 # f++++++++++++: /Library/LaunchAgents/com.test.aide.plist
 ```
 
+8.  Routine update workflow — unlock, update, re-sign, re-lock:
+
 ```zsh
-# Run whenever finished installing legitimate apps/processes
+# Unlock
+sudo chflags nouchg /opt/local/var/lib/aide/aide.db
+sudo chflags nouchg /opt/local/var/lib/aide/aide.db.sig
+
+# Update database
 sudo aide --update
-# New AIDE database written to /opt/local/var/lib/aide/aide.db.new
 sudo mv /opt/local/var/lib/aide/aide.db.new /opt/local/var/lib/aide/aide.db
 
+# Re-sign
+sudo cat /opt/local/var/lib/aide/aide.db | \
+    gpg2 --detach-sign --armor | \
+    sudo tee /opt/local/var/lib/aide/aide.db.sig > /dev/null
+sudo chown root:admin /opt/local/var/lib/aide/aide.db.sig
+sudo chmod 644 /opt/local/var/lib/aide/aide.db.sig
+
+# Re-lock
+sudo chflags uchg /opt/local/var/lib/aide/aide.db
+sudo chflags uchg /opt/local/var/lib/aide/aide.db.sig
+
+# Sanity check
+sudo cat /opt/local/var/lib/aide/aide.db | \
+    gpg2 --verify /opt/local/var/lib/aide/aide.db.sig -
 sudo aide --check
 # AIDE found NO differences between database and filesystem. Looks okay!!
-
-echo "modified" | sudo tee /Library/LaunchAgents/com.test.aide.plist
-sudo aide --check
-#  Added entries:		0
-#  Removed entries:		0
-#  Changed entries:		1
 ```
 
-7.  Ensure that database exists:
+9.  Ensure that database exists and is locked:
 
 ```zsh
-ls -la /opt/local/var/lib/aide/aide.db
-# -rw-------  1 root  admin  1454621 Jan 16 10:22 /opt/local/var/lib/aide/aide.db
+ls -lO /opt/local/var/lib/aide/aide.db /opt/local/var/lib/aide/aide.db.sig
+# -rw-------  1 root  admin  uchg ... aide.db
+# -rw-r--r--  1 root  admin  uchg ... aide.db.sig
 ```
 
-8.  Cleanup after testing for the next manual/on-demand scan.
+10. Cleanup after testing for the next manual/on-demand scan (uses the step-8 update workflow):
 
 ```bash
 sudo rm /Library/LaunchAgents/com.test.aide.plist
+
+sudo chflags nouchg /opt/local/var/lib/aide/aide.db /opt/local/var/lib/aide/aide.db.sig
 sudo aide --update
 sudo mv /opt/local/var/lib/aide/aide.db.new /opt/local/var/lib/aide/aide.db
+sudo cat /opt/local/var/lib/aide/aide.db | \
+    gpg2 --detach-sign --armor | \
+    sudo tee /opt/local/var/lib/aide/aide.db.sig > /dev/null
+sudo chown root:admin /opt/local/var/lib/aide/aide.db.sig
+sudo chmod 644 /opt/local/var/lib/aide/aide.db.sig
+sudo chflags uchg /opt/local/var/lib/aide/aide.db /opt/local/var/lib/aide/aide.db.sig
 
 sudo aide --check
 # AIDE found NO differences between database and filesystem. Looks okay!!
@@ -411,13 +455,14 @@ sudo aide --check
 
 ### A) Quick Reference
 
-| Task                 | Command                                                                                             |
-| -------------------- | --------------------------------------------------------------------------------------------------- |
-| Manual check         | `sudo aide --check`                                                                                 |
-| Update after changes | `sudo aide --update && sudo mv /opt/local/var/lib/aide/aide.db.new /opt/local/var/lib/aide/aide.db` |
-| Re-initialize        | `sudo aide --init && sudo mv /opt/local/var/lib/aide/aide.db.new /opt/local/var/lib/aide/aide.db`   |
-| View log             | `sudo cat /opt/local/var/log/aide/aide.log`                                                         |
-| Verbose check        | `sudo aide --check -L info`                                                                         |
+| Task                 | Command                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Verify signature     | `sudo cat /opt/local/var/lib/aide/aide.db \| gpg2 --verify /opt/local/var/lib/aide/aide.db.sig -`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Manual check         | `sudo aide --check` (run after verify)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| Update after changes | `sudo chflags nouchg /opt/local/var/lib/aide/aide.db /opt/local/var/lib/aide/aide.db.sig && sudo aide --update && sudo mv /opt/local/var/lib/aide/aide.db.new /opt/local/var/lib/aide/aide.db && sudo cat /opt/local/var/lib/aide/aide.db \| gpg2 --detach-sign --armor \| sudo tee /opt/local/var/lib/aide/aide.db.sig > /dev/null && sudo chown root:admin /opt/local/var/lib/aide/aide.db.sig && sudo chmod 644 /opt/local/var/lib/aide/aide.db.sig && sudo chflags uchg /opt/local/var/lib/aide/aide.db /opt/local/var/lib/aide/aide.db.sig`                                                       |
+| Re-initialize        | Same flow as update, but with `aide --init` instead of `aide --update`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| View log             | `sudo cat /opt/local/var/log/aide/aide.log`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Verbose check        | `sudo aide --check -L info`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 ### B) Monitored Directories
 

@@ -19,8 +19,9 @@
       <dict>
         <key>ClientMode</key>
         <integer>1</integer>
-        <key>FailClosed</key>
-        <true />
+        <!-- FailClosed only takes effect in Lockdown (ClientMode=2); no-op in Monitor mode -->
+        <!-- <key>FailClosed</key>
+        <true /> -->
         <key>EnableBadSignatureProtection</key>
         <true />
         <key>EnablePageZeroProtection</key>
@@ -29,10 +30,26 @@
         <true />
         <key>EnableAllEventUpload</key>
         <true />
-
-        <key>BlockUSBMount</key>
+        <key>IgnoreOtherEndpointSecurityClients</key>
         <false />
-        <key>RemountUSBMode</key>
+        <key>EnableMenuItem</key>
+        <true />
+        <key>AntiSuspendSigningIDs</key>
+        <array>
+          <string>platform:com.apple.tccd</string>
+          <string>platform:com.apple.securityd</string>
+          <string>platform:com.apple.endpointsecurityd</string>
+          <string>platform:com.apple.opendirectoryd</string>
+          <string>ZMCG7MLDV9:com.northpolesec.santa</string>
+        </array>
+        <key>EntitlementsPrefixFilter</key>
+        <array>
+          <string>com.apple.private</string>
+        </array>
+
+        <key>RemovableMediaAction</key>
+        <string>Remount</string>
+        <key>RemovableMediaRemountFlags</key>
         <array>
           <string>noexec</string>
           <string>nosuid</string>
@@ -150,6 +167,66 @@
             <key>cel_expr</key>
             <string>'localsnapshot' in args ? BLOCKLIST : ALLOWLIST</string>
           </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>CEL</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.csrutil</string>
+            <key>cel_expr</key>
+            <string>args.exists(arg, arg in ['disable','enable','clear','authenticated-root','netboot']) ? BLOCKLIST : ALLOWLIST</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>CEL</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.nvram</string>
+            <key>cel_expr</key>
+            <string>args.exists(arg, arg.contains("=")) || ('-d' in args) || ('-c' in args) ? BLOCKLIST : ALLOWLIST</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>CEL</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.bless</string>
+            <key>cel_expr</key>
+            <string>args.exists(arg, arg in ['--setBoot','--bootefi','--folder','--device']) ? BLOCKLIST : ALLOWLIST</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>CEL</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.fdesetup</string>
+            <key>cel_expr</key>
+            <string>args.exists(arg, arg in ['disable','remove','changerecovery']) ? BLOCKLIST : ALLOWLIST</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>CEL</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.tccutil</string>
+            <key>cel_expr</key>
+            <string>'reset' in args ? BLOCKLIST : ALLOWLIST</string>
+          </dict>
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>CEL</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.profiles</string>
+            <key>cel_expr</key>
+            <string>args.exists(arg, arg in ['-I','-R','-D','install','remove']) ? BLOCKLIST : ALLOWLIST</string>
+          </dict>
 
           <dict>
             <key>RuleType</key>
@@ -189,23 +266,7 @@
             <key>Policy</key>
             <string>BLOCKLIST</string>
             <key>Identifier</key>
-            <string>platform:com.apple.gamecenter</string>
-          </dict>
-          <dict>
-            <key>RuleType</key>
-            <string>SIGNINGID</string>
-            <key>Policy</key>
-            <string>BLOCKLIST</string>
-            <key>Identifier</key>
             <string>platform:com.apple.Home</string>
-          </dict>
-          <dict>
-            <key>RuleType</key>
-            <string>SIGNINGID</string>
-            <key>Policy</key>
-            <string>BLOCKLIST</string>
-            <key>Identifier</key>
-            <string>platform:com.apple.journal</string>
           </dict>
           <dict>
             <key>RuleType</key>
@@ -253,39 +314,7 @@
             <key>Policy</key>
             <string>BLOCKLIST</string>
             <key>Identifier</key>
-            <string>platform:com.apple.podcasts</string>
-          </dict>
-          <dict>
-            <key>RuleType</key>
-            <string>SIGNINGID</string>
-            <key>Policy</key>
-            <string>BLOCKLIST</string>
-            <key>Identifier</key>
-            <string>platform:com.apple.reminders</string>
-          </dict>
-          <dict>
-            <key>RuleType</key>
-            <string>SIGNINGID</string>
-            <key>Policy</key>
-            <string>BLOCKLIST</string>
-            <key>Identifier</key>
-            <string>platform:com.apple.Siri</string>
-          </dict>
-          <dict>
-            <key>RuleType</key>
-            <string>SIGNINGID</string>
-            <key>Policy</key>
-            <string>BLOCKLIST</string>
-            <key>Identifier</key>
             <string>platform:com.apple.Stickies</string>
-          </dict>
-          <dict>
-            <key>RuleType</key>
-            <string>SIGNINGID</string>
-            <key>Policy</key>
-            <string>BLOCKLIST</string>
-            <key>Identifier</key>
-            <string>platform:com.apple.stocks</string>
           </dict>
           <dict>
             <key>RuleType</key>
@@ -301,14 +330,6 @@
             <key>Policy</key>
             <string>BLOCKLIST</string>
             <key>Identifier</key>
-            <string>platform:com.apple.news</string>
-          </dict>
-          <dict>
-            <key>RuleType</key>
-            <string>SIGNINGID</string>
-            <key>Policy</key>
-            <string>BLOCKLIST</string>
-            <key>Identifier</key>
             <string>platform:com.apple.freeform</string>
           </dict>
           <dict>
@@ -317,7 +338,18 @@
             <key>Policy</key>
             <string>BLOCKLIST</string>
             <key>Identifier</key>
-            <string>platform:com.apple.amsengagementd</string>
+            <string>platform:com.apple.shortcuts</string>
+          </dict>
+          <!-- iWork apps are typically Mac App Store distributed; signing ID likely uses
+               Apple's distribution Team ID rather than `platform:`. Verify with:
+               santactl fileinfo /Applications/Numbers.app -->
+          <dict>
+            <key>RuleType</key>
+            <string>SIGNINGID</string>
+            <key>Policy</key>
+            <string>BLOCKLIST</string>
+            <key>Identifier</key>
+            <string>platform:com.apple.iWork.Numbers</string>
           </dict>
           <dict>
             <key>RuleType</key>
@@ -325,7 +357,7 @@
             <key>Policy</key>
             <string>BLOCKLIST</string>
             <key>Identifier</key>
-            <string>platform:com.apple.amp.mediasharingd</string>
+            <string>platform:com.apple.iWork.Pages</string>
           </dict>
           <dict>
             <key>RuleType</key>
@@ -333,7 +365,7 @@
             <key>Policy</key>
             <string>BLOCKLIST</string>
             <key>Identifier</key>
-            <string>platform:com.apple.helpviewer</string>
+            <string>platform:com.apple.iWork.Keynote</string>
           </dict>
 
           <dict>
