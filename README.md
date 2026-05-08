@@ -34,8 +34,9 @@ Time investment: ~90 minutes from a fresh install with decent Internet connectiv
   - Implement some hardware hardening:
 
 ```zsh
-# Cold boot attacks
-sudo pmset -a destroyfvkeyonstandby 1 hibernatemode 25 standbydelaylow 0 standbydelayhigh 0 highstandbythreshold 0 powernap 0 tcpkeepalive 0 proximitywake 0
+# Cold boot attacks (deprecated)
+# sudo pmset -a destroyfvkeyonstandby 1 hibernatemode 25 standbydelaylow 0 standbydelayhigh 0 highstandbythreshold 0 powernap 0 tcpkeepalive 0 proximitywake 0
+# to revert: sudo pmset -a destroyfvkeyonstandby 0 hibernatemode 3 standbydelaylow 10800 standbydelayhigh 86400
 
 # Reduce unified log retention
 sudo log config --mode "level:off" --subsystem com.apple.diagnosticd

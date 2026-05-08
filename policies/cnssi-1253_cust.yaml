@@ -199,7 +199,6 @@ profile:
       - system_settings_time_machine_encrypted_configure
       - system_settings_time_server_configure
       - system_settings_time_server_enforce
-      - system_settings_token_removal_enforce
       - system_settings_touch_id_settings_disable
       - system_settings_touchid_unlock_disable
       - system_settings_usb_restricted_mode
